@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace 计算机图形学大作业
+namespace CG
 {
     static class Program
     {

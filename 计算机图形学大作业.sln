@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "计算机图形学大作业", "计算机图形学大作业\计算机图形学大作业.csproj", "{4C6AB0C9-4363-415C-9462-837480B9E52A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CG", "计算机图形学大作业\CG.csproj", "{4C6AB0C9-4363-415C-9462-837480B9E52A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

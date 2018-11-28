@@ -1,4 +1,6 @@
-﻿namespace 计算机图形学大作业
+﻿
+
+namespace CG
 {
     partial class Form1
     {
@@ -31,10 +33,10 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.基本图形生成ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.DDALine = new System.Windows.Forms.ToolStripMenuItem();
-            this.MidPointLine = new System.Windows.Forms.ToolStripMenuItem();
+            this.MidLine = new System.Windows.Forms.ToolStripMenuItem();
             this.bresenham直线ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.中点圆ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.bresenham圆ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.BresenhamCircle = new System.Windows.Forms.ToolStripMenuItem();
             this.正负圆ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bezier曲线ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.b样条曲线ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -45,6 +47,7 @@
             this.投影ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.消隐ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.退出ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ScanLineFill = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -69,10 +72,10 @@
             // 
             this.基本图形生成ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.DDALine,
-            this.MidPointLine,
+            this.MidLine,
             this.bresenham直线ToolStripMenuItem,
             this.中点圆ToolStripMenuItem,
-            this.bresenham圆ToolStripMenuItem,
+            this.BresenhamCircle,
             this.正负圆ToolStripMenuItem,
             this.bezier曲线ToolStripMenuItem,
             this.b样条曲线ToolStripMenuItem,
@@ -88,11 +91,12 @@
             this.DDALine.Text = "DDA直线";
             this.DDALine.Click += new System.EventHandler(this.DDALine_Click);
             // 
-            // MidPointLine
+            // MidLine
             // 
-            this.MidPointLine.Name = "MidPointLine";
-            this.MidPointLine.Size = new System.Drawing.Size(194, 26);
-            this.MidPointLine.Text = "中点直线";
+            this.MidLine.Name = "MidLine";
+            this.MidLine.Size = new System.Drawing.Size(194, 26);
+            this.MidLine.Text = "中点直线";
+            this.MidLine.Click += new System.EventHandler(this.MidLine_Click);
             // 
             // bresenham直线ToolStripMenuItem
             // 
@@ -106,11 +110,12 @@
             this.中点圆ToolStripMenuItem.Size = new System.Drawing.Size(194, 26);
             this.中点圆ToolStripMenuItem.Text = "中点圆";
             // 
-            // bresenham圆ToolStripMenuItem
+            // BresenhamCircle
             // 
-            this.bresenham圆ToolStripMenuItem.Name = "bresenham圆ToolStripMenuItem";
-            this.bresenham圆ToolStripMenuItem.Size = new System.Drawing.Size(194, 26);
-            this.bresenham圆ToolStripMenuItem.Text = "Bresenham圆";
+            this.BresenhamCircle.Name = "BresenhamCircle";
+            this.BresenhamCircle.Size = new System.Drawing.Size(194, 26);
+            this.BresenhamCircle.Text = "Bresenham圆";
+            this.BresenhamCircle.Click += new System.EventHandler(this.BresenhamCircle_Click);
             // 
             // 正负圆ToolStripMenuItem
             // 
@@ -150,6 +155,8 @@
             // 
             // 图形填充ToolStripMenuItem
             // 
+            this.图形填充ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ScanLineFill});
             this.图形填充ToolStripMenuItem.Name = "图形填充ToolStripMenuItem";
             this.图形填充ToolStripMenuItem.Size = new System.Drawing.Size(81, 24);
             this.图形填充ToolStripMenuItem.Text = "图形填充";
@@ -172,6 +179,13 @@
             this.退出ToolStripMenuItem.Size = new System.Drawing.Size(51, 24);
             this.退出ToolStripMenuItem.Text = "退出";
             this.退出ToolStripMenuItem.Click += new System.EventHandler(this.退出ToolStripMenuItem_Click);
+            // 
+            // ScanLineFill
+            // 
+            this.ScanLineFill.Name = "ScanLineFill";
+            this.ScanLineFill.Size = new System.Drawing.Size(189, 26);
+            this.ScanLineFill.Text = "扫描线填充算法";
+            this.ScanLineFill.Click += new System.EventHandler(this.ScanLineFill_Click);
             // 
             // Form1
             // 
@@ -196,10 +210,10 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem 基本图形生成ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem DDALine;
-        private System.Windows.Forms.ToolStripMenuItem MidPointLine;
+        private System.Windows.Forms.ToolStripMenuItem MidLine;
         private System.Windows.Forms.ToolStripMenuItem bresenham直线ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 中点圆ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem bresenham圆ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem BresenhamCircle;
         private System.Windows.Forms.ToolStripMenuItem 正负圆ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem bezier曲线ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem b样条曲线ToolStripMenuItem;
@@ -210,6 +224,7 @@
         private System.Windows.Forms.ToolStripMenuItem 投影ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 消隐ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 退出ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ScanLineFill;
     }
 }
 
