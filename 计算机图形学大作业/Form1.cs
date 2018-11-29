@@ -36,17 +36,23 @@ namespace CG
         Color ForeColor1 = Color.Black;//DDALine，笔色
         public int MenuID;//DDALine功能选择
         public int PressNum;//DDAline，识别起始点还是结束点
+        public int PointNum;//图线填充，记录点个数
         public int FirstX;//DDALine，起始端点坐标
         public int FirstY;//DDALine
         public int OldX;//DDALine
         public int OldY;//DDALine
         public List<line> Line = new List<line>();
-
         Point[] group = new Point[100];//图形填充时用以记录顶点
+
+        //二维裁剪窗口
+        public int XL, XR, YU, YD;
+        Point[] pointsgroup = new Point[4];
+       
         private void initializeLine(int mid)
         {
             MenuID = mid;
             PressNum = 0;
+            PointNum = 0;
         }
 
         private void 退出ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -106,32 +112,53 @@ namespace CG
             }
             else if (MenuID == 31)
             {
-               // if (PressNum == 0)//记录起点
-                //{//起点
-                 //   FirstX = e.X;
-                  //  FirstY = e.Y;
-               // }
+               if (PressNum == 0)//记录起点
+               {//起点
+                   OldX = e.X;
+                   OldY = e.Y;
+               }
                // OldX = FirstX;
                // OldY = FirstY;
                // FirstX = e.X;
                // FirstY = e.Y;
-                if (e.Button == MouseButtons.Left) //如果按左键，存下该定点
+                if (e.Button == MouseButtons.Left) //左键定点
                 {
-                    group[PressNum].X = e.X;
-                    group[PressNum].Y = e.Y;
+                    //group[PressNum].X = e.X;
+                    //group[PressNum].Y = e.Y;
+                    group[PointNum].X = e.X;
+                    group[PointNum].Y = e.Y;
                     if (PressNum > 0)//画出这些点
                     {
-                        g.DrawLine(Pens.Red, group[PressNum - 1], group[PressNum]);
+                        g.DrawLine(Pens.Red, group[PointNum - 1], group[PointNum]);
                     }
+                    PointNum++;
                     PressNum++;
                 }
-                else if (e.Button == MouseButtons.Right)//右键顶点采集结束
+                else if (e.Button == MouseButtons.Right)//右键结束
                 {
-                    g.DrawLine(Pens.Red, group[PressNum - 1], group[0]);
+                    g.DrawLine(Pens.Red, group[PointNum - 1], group[0]);
                     ScanLineFill1();//扫描线填充
+                    PointNum = 0;
                     PressNum = 0;//清零
                 }
 
+            }
+            else if(MenuID == 21 || MenuID == 22)//Cohen裁剪算法
+            {
+                if(PressNum == 0)
+                {
+                    FirstX = e.X;
+                    FirstY = e.Y;
+                    PressNum++;
+                }
+                else
+                {
+                    if(MenuID == 21)
+                    CohenCut1(FirstX, FirstY, e.X, e.Y);
+                    else
+                        MidCut1(FirstX, FirstY, e.X, e.Y);
+                    PressNum = 0;
+                }
             }
         }
         private void DDALine1(int x0, int y0, int x1, int y1)
@@ -372,9 +399,224 @@ namespace CG
                 }
             }
         }
+        public struct EdgeInfo
+        {
+            int ymax, ymin;//Y的上下端点
+            float k, xmin;//斜率倒数和X的下端点
+
+            //为四个内部变量设置公共变量，方便对数据进行存取
+            public int YMax { get { return ymax; } set { ymax = value; } }
+            public int YMin { get { return ymin; } set { ymin = value; } }
+
+            public float XMin { get { return xmin; } set { xmin = value; } }
+
+            public float K { get { return k; } set { k = value; } }
+
+            public EdgeInfo(int x1, int y1, int x2, int y2)//(x1, y1)上端点(x2, y2)下端点
+            {
+                ymax = y2;
+                ymin = y1;
+                xmin = (float)x1;
+                k = (float)(x1 - x2) / (float)(y1 - y2);
+            }
+        }
         private void ScanLineFill1()
         {
+            int edgesize = 0;
+            int yu = 0, yd = 600;//活化边扫描范围
+            EdgeInfo[] edgelist = new EdgeInfo[100];//存边
+            group[PressNum] = group[0];
+            for(int i = 0; i < PressNum;i++)
+            {
+                if (group[i].Y > yu) yu = group[i].Y;//最高点
+                if (group[i].Y < yd) yd = group[i].Y;//最低点
+                if(group[i].Y!=group[i+1].Y)//只处理非水平边
+                {
+                    if(group[i].Y > group[i+1].Y)//下端点在前，上端点在后
+                    {
+                        edgelist[edgesize++] = new EdgeInfo(group[i + 1].X, group[i + 1].Y, group[i].X, group[i].Y);
+                    }
+                    else
+                    {
+                        edgelist[edgesize++] = new EdgeInfo(group[i].X, group[i].Y, group[i + 1].X, group[i + 1].Y);
+                    }
+                }
+            }
+            Graphics g = CreateGraphics();
+            for (int y = yd; y < yu; y++)//AEL表操作
+            {
+                var sorted =
+                    from item in edgelist
+                    where y < item.YMax && y >= item.YMin
+                    orderby item.XMin, item.K
+                    select item;
 
+                int flag = 0;//设置一个变量用于记录是线段的第几个点
+                foreach (var item in sorted)
+                {
+                    if (flag == 0)//起点
+                    {
+                        FirstX = (int)(item.XMin + 0.5);
+                        flag++;
+                    }
+                    else//终点
+                    {
+                        g.DrawLine(Pens.Blue, (int)(item.XMin + 0.5), y, FirstX - 1, y);
+                        flag = 0;
+                    }
+                }
+                for (int i = 0; i < edgesize; i++)//将dx加到x上
+                {
+                    if (y < edgelist[i].YMax - 1 && y > edgelist[i].YMin)//选出与扫描线相交的边
+                    {
+                        edgelist[i].XMin += edgelist[i].K;
+                    }
+                }
+            }
+        }
+        private int encode(int x, int y)
+        {
+            int code = 0;
+            if (x >= XL && x <= XR && y >= YD && y <= YU) code = 0;
+
+            if (x < XL && y >= YD && y <= YU) code = 1;
+            if (x > XR && y >= YD && y <= YU) code = 2;
+
+            if (x >= XL && x <= XR && y > YU) code = 8;
+            if (x >= XL && x <= XR && y < YD) code = 4;
+
+            if (x <= XL && y > YU) code = 9;
+
+            if (x >= XR && y > YU) code = 10;
+            if (x <= XL && y < YD) code = 5;
+            if (x >= XR && y < YD) code = 6;
+            return code;
+        }
+        private void CohenCut1(int x1, int y1, int x2, int y2)
+        {
+            int code1 = 0, code2 = 0, code, x = 0, y = 0;
+            Graphics g = CreateGraphics();
+            g.DrawLine(Pens.Red, x1, y1, x2, y2);
+            code1 = encode(x1, y1);
+            code2 = encode(x2, y2);
+            while(code1 != 0 || code2 !=0)
+            {
+                if ((code1 & code2) != 0)
+                    return;
+                code = code1;
+                if (code1 == 0) code = code2;
+                if((1&code)!=0)
+                {
+                    x = XL;
+                    y = y1 + (y2 - y1) * (x - x1) / (x2 - x1);
+                }
+                else if((2&code)!=0)
+                {
+                    x = XR;
+                    y = y1 + (y2 - y1) * (x - x1) / (x2 - x1);
+                }
+                else if((4&code)!=0)
+                {
+                    y = YD;
+                    x = x1 + (x2 - x1) * (y - y1) / (y2 - y1);
+                }
+                else if((8&code)!=0)
+                {
+                    y = YU;
+                    x = x1 + (x2 - x1) * (y - y1) / (y2 - y1);
+                }
+                if(code == code1)
+                {
+                    x1 = x;
+                    y1 = y;
+                    code1 = encode(x, y);
+                }
+                else
+                {
+                    x2 = x;
+                    y2 = y;
+                    code2 = encode(x, y);
+                }
+            }
+            Pen DrawPen = new Pen(Color.Yellow, 3);
+            g.DrawLine(DrawPen, x1, y1, x2, y2);
+
+        }      
+
+        private bool LineIsOutOfWindow(int x1, int y1, int x2, int y2)
+        {
+            if (x1 < XL && x2 < XL)
+                return true;
+            else if (x1 > XR && x2 > XR)
+                return true;
+            else if (y1 > YU && y2 > YU)
+                return true;
+            else if (y1 < YD && y2 < YD)
+                return true;
+            else
+                return false;
+        }
+        private bool PointIsOutOfWindow(int x, int y)
+        {
+            if (x < XL)
+                return true;
+            else if (x > XR)
+                return true;
+            else if (y > YU)
+                return true;
+            else if (y < YD)
+                return true;
+            else
+                return false;
+        }
+        private Point FindNearestPoint(int x1, int y1, int x2, int y2)
+        {
+            int x = 0, y = 0;
+            Point p = new Point(0, 0);
+            if(!PointIsOutOfWindow(x1, y1))
+            {
+                p.X = x1;
+                p.Y = y1;
+                return p;
+            }
+            while(!(Math.Abs(x1 - x2) <= 1 && Math.Abs(y1-y2)<=1))
+            {
+                x = (x1 + x2) / 2;
+                y = (y1 + y2) / 2;
+                if(LineIsOutOfWindow(x1, y1, x, y))
+                {
+                    x1 = x; y1 = y;
+                }
+                else
+                {
+                    x2 = x;y2 = y;
+                }
+            }
+            if(PointIsOutOfWindow(x1, y1))
+            {
+                p.X = x2;
+                p.Y = y2;
+            }
+            else
+            {
+                p.X = x1;
+                p.Y = y1;
+            }
+            return p;
+        }
+        private void MidCut1(int x1, int y1, int x2, int y2)
+        {
+            Graphics g = CreateGraphics();
+            g.DrawLine(Pens.Red, x1, y1, x2, y2);
+            Point p1, p2;
+            if (LineIsOutOfWindow(x1, y1, x2, y2))
+                return;
+            p1 = FindNearestPoint(x1, y1, x2, y2);
+            if (PointIsOutOfWindow(p1.X, p1.Y))
+                return;
+            p2 = FindNearestPoint(x2, y2, x1, y1);
+            Pen DrawPen = new Pen(Color.Yellow, 3);
+            g.DrawLine(DrawPen, p1, p2);
         }
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
@@ -432,6 +674,26 @@ namespace CG
             g.Clear(BackColor1);
         }
 
+        private void MidCut_Click(object sender, EventArgs e)
+        {
+            initializeLine(22);
+            Graphics g = CreateGraphics();
+            XL = 100;
+            XR = 400;
+            YD = 100;
+            YU = 400;
+            pointsgroup[0] = new Point(XL, YD);
+            pointsgroup[1] = new Point(XR, YD);
+            pointsgroup[2] = new Point(XR, YU);
+            pointsgroup[3] = new Point(XL, YU);
+            g.DrawPolygon(Pens.Blue, pointsgroup);
+        }
+
+        private void 中点圆ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
         private void BresenhamCircle_Click(object sender, EventArgs e)
         {
             initializeLine(5);//圆与直线初始化通用
@@ -442,8 +704,25 @@ namespace CG
         private void ScanLineFill_Click(object sender, EventArgs e)
         {
             MenuID = 31;//扫描线填充算法
+            initializeLine(31);
             Graphics g = CreateGraphics();//创建画布
             g.Clear(BackColor1);//背景填充
+        }
+
+        private void CohenCut_Click(object sender, EventArgs e)
+        {
+            initializeLine(21);
+            Graphics g = CreateGraphics();
+            XL = 100;
+            XR = 400;
+            YD = 100;
+            YU = 400;
+            pointsgroup[0] = new Point(XL, YD);
+            pointsgroup[1] = new Point(XR, YD);
+            pointsgroup[2] = new Point(XR, YU);
+            pointsgroup[3] = new Point(XL, YU);
+            g.DrawPolygon(Pens.Blue, pointsgroup);
+
         }
     }
 }
