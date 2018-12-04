@@ -43,7 +43,7 @@ namespace CG
         public int OldY;//DDALine
         public List<line> Line = new List<line>();
         Point[] group = new Point[100];//图形填充时用以记录顶点
-
+        Graphics CurrentGraph; 
         //二维裁剪窗口
         public int XL, XR, YU, YD;
         Point[] pointsgroup = new Point[4];
@@ -53,6 +53,7 @@ namespace CG
             MenuID = mid;
             PressNum = 0;
             PointNum = 0;
+            CurrentGraph.Clear(BackColor1);
         }
 
         private void 退出ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -62,8 +63,10 @@ namespace CG
 
         private void DDALine_Click(object sender, EventArgs e)
         {
-            MenuID = 1;
-            PressNum = 0;
+            CurrentGraph.Clear(BackColor1);
+            initializeLine(1);
+            //MenuID = 1;
+            //PressNum = 0;
             Graphics g = CreateGraphics();//创建一张画纸
             g.Clear(BackColor1);//设置底色
         }
@@ -110,7 +113,7 @@ namespace CG
                 }
                 PressNum = (PressNum + 1) % 2;
             }
-            else if (MenuID == 31)
+            else if (MenuID == 31||MenuID == 24)//扫描线填充算法和多边形裁剪算法
             {
                if (PressNum == 0)//记录起点
                {//起点
@@ -137,13 +140,14 @@ namespace CG
                 else if (e.Button == MouseButtons.Right)//右键结束
                 {
                     g.DrawLine(Pens.Red, group[PointNum - 1], group[0]);
-                    ScanLineFill1();//扫描线填充
+                    if (MenuID == 31) ScanLineFill1();//扫描线填充
+                    else if (MenuID == 24) WindowCut1();//多边形裁剪
                     PointNum = 0;
                     PressNum = 0;//清零
                 }
 
             }
-            else if(MenuID == 21 || MenuID == 22)//Cohen裁剪算法
+            else if(MenuID == 21 || MenuID == 22||MenuID == 23)//三种裁剪算法通用
             {
                 if(PressNum == 0)
                 {
@@ -153,16 +157,19 @@ namespace CG
                 }
                 else
                 {
-                    if(MenuID == 21)
-                    CohenCut1(FirstX, FirstY, e.X, e.Y);
-                    else
+                    if (MenuID == 21)
+                        CohenCut1(FirstX, FirstY, e.X, e.Y);
+                    else if (MenuID == 22)
                         MidCut1(FirstX, FirstY, e.X, e.Y);
+                    else if (MenuID == 23)
+                        LiangCut1(FirstX, FirstY, e.X, e.Y);
                     PressNum = 0;
                 }
             }
         }
         private void DDALine1(int x0, int y0, int x1, int y1)
         {//程序仍需实现画点
+            //CurrentGraph = CreateGraphics();
             int flag;
             float k;
             Graphics g = CreateGraphics();//创建画布
@@ -258,7 +265,7 @@ namespace CG
                         break;
                 }
             }
-
+            CurrentGraph = g;
         }
         private void MidLine1(int x0, int y0, int x1, int y1)
         {
@@ -267,6 +274,7 @@ namespace CG
             if (x0 == x1 && y0 == y1)
             {
                 g.DrawRectangle(Pens.Red, x0, y0, 1, 1);
+                CurrentGraph = g;
                 return;//画点
             }
             else if(x0 == x1)//竖直线
@@ -281,6 +289,7 @@ namespace CG
                 {
                     g.DrawRectangle(Pens.Red, x1, i, 1, 1);//画点
                 }
+                CurrentGraph = g;
                 return;
             }
             else if(y0 == y1)//水平线
@@ -295,6 +304,7 @@ namespace CG
                 {
                     g.DrawRectangle(Pens.Red, i, y1, 1, 1);//画点
                 }
+                CurrentGraph = g;
                 return;
             }
             if(x0 > x1)//将左边的作为起点
@@ -370,6 +380,7 @@ namespace CG
                     d = d - 2 * (deltaY - deltaX);
                 }
             }
+            CurrentGraph = g;
         }
         private void BresenhamCircle1(int x0, int y0, int x1, int y1)
         {
@@ -386,9 +397,9 @@ namespace CG
                 g.DrawRectangle(Pens.Yellow, -x + x0, -y + y0, 1, 1);
 
                 g.DrawRectangle(Pens.Black, y + x0, x + y0, 1, 1);
-                g.DrawRectangle(Pens.Red, -y + x0, x + y0, 1, 1);
-                g.DrawRectangle(Pens.Red, y + x0, -x + y0, 1, 1);
-                g.DrawRectangle(Pens.Red, -y + x0, -x + y0, 1, 1);
+                g.DrawRectangle(Pens.Pink, -y + x0, x + y0, 1, 1);
+                g.DrawRectangle(Pens.Purple, y + x0, -x + y0, 1, 1);
+                g.DrawRectangle(Pens.Gray, -y + x0, -x + y0, 1, 1);
                 x++;
                 if (d < 0 || d == 0)
                     d = d + 4 * x + 6;
@@ -398,6 +409,7 @@ namespace CG
                     d = d + 4 * (x - y) + 10;
                 }
             }
+            CurrentGraph = g;
         }
         public struct EdgeInfo
         {
@@ -473,6 +485,7 @@ namespace CG
                     }
                 }
             }
+            CurrentGraph = g;
         }
         private int encode(int x, int y)
         {
@@ -496,7 +509,9 @@ namespace CG
         {
             int code1 = 0, code2 = 0, code, x = 0, y = 0;
             Graphics g = CreateGraphics();
+
             g.DrawLine(Pens.Red, x1, y1, x2, y2);
+            CurrentGraph = g;
             code1 = encode(x1, y1);
             code2 = encode(x2, y2);
             while(code1 != 0 || code2 !=0)
@@ -540,7 +555,7 @@ namespace CG
             }
             Pen DrawPen = new Pen(Color.Yellow, 3);
             g.DrawLine(DrawPen, x1, y1, x2, y2);
-
+            CurrentGraph = g;
         }      
 
         private bool LineIsOutOfWindow(int x1, int y1, int x2, int y2)
@@ -608,6 +623,7 @@ namespace CG
         {
             Graphics g = CreateGraphics();
             g.DrawLine(Pens.Red, x1, y1, x2, y2);
+            CurrentGraph = g;
             Point p1, p2;
             if (LineIsOutOfWindow(x1, y1, x2, y2))
                 return;
@@ -617,6 +633,7 @@ namespace CG
             p2 = FindNearestPoint(x2, y2, x1, y1);
             Pen DrawPen = new Pen(Color.Yellow, 3);
             g.DrawLine(DrawPen, p1, p2);
+            CurrentGraph = g;
         }
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
@@ -637,7 +654,7 @@ namespace CG
             {
                 if(!((e.X == OldX)&&(e.Y == OldY)))
                 {
-                    int deltaX = FirstX - OldX, deltaY = OldY;
+                    int deltaX = FirstX - OldX, deltaY = FirstY - OldY;
                     double r = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);//半径
                     int r1 = (int)(r + 0.5);//取整
                     g.DrawEllipse(BackgroundPen, FirstX - r1, FirstY - r1, 2 * r1, 2 * r1);//擦除旧圆
@@ -650,7 +667,7 @@ namespace CG
                     OldY = e.Y;
                 }
             }
-            else if(MenuID == 31 && PressNum > 0)
+            else if((MenuID == 31 || MenuID == 24)&& PressNum > 0)
             {
                 {
                     if(!(e.X == OldX && e.Y == OldY))
@@ -662,6 +679,7 @@ namespace CG
                     }
                 }
             }
+            CurrentGraph = g;
         }
       
 
@@ -670,6 +688,7 @@ namespace CG
             initializeLine(2);
             //MenuID = 2;
             //PressNum = 0;//初始化
+            CurrentGraph.Clear(BackColor1);
             Graphics g = CreateGraphics();
             g.Clear(BackColor1);
         }
@@ -677,7 +696,244 @@ namespace CG
         private void MidCut_Click(object sender, EventArgs e)
         {
             initializeLine(22);
+            CurrentGraph.Clear(BackColor1);
             Graphics g = CreateGraphics();
+            XL = 100;
+            XR = 400;
+            YD = 100;
+            YU = 400;
+            pointsgroup[0] = new Point(XL, YD);
+            pointsgroup[1] = new Point(XR, YD);
+            pointsgroup[2] = new Point(XR, YU);
+            pointsgroup[3] = new Point(XL, YU);
+            g.DrawPolygon(Pens.Blue, pointsgroup);
+            CurrentGraph = g;
+        }
+
+        private void 中点圆ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void LiangCut1(int x0, int y0, int x1, int y1)
+        {
+            Graphics g = CreateGraphics();
+            g.DrawLine(Pens.Red, x0, y0, x1, y1);
+            float tsx, tsy, tex, tey;//设置两个始边、两个终边对应的t参数
+            if(x0==x1)//竖直线
+            {
+                //？？特殊情况统一设置以便后续统一？？？
+                tsx = 0;
+                tex = 1;
+            }
+            else if(x0 < x1)
+            {
+                //满足条件，X方向起始边为XL，终点边为XR，可直接计算对应参数
+                tsx = (float)(XL - x0) / (float)(x1 - x0);
+                tex = (float)(XR - x0) / (float)(x1 - x0);
+            }
+            else
+            {
+                //如果条件不满足，X方向起始边为XR，终点边为XL，仍可直接计算
+                tsx = (float)(XR - x0) / (float)(x1 - x0);
+                tex = (float)(XL - x0) / (float)(x1 - x0);
+            }
+            if (y0 == y1)//水平线
+            {
+                //？？？又是特殊情况，这样设置可以使后续工作方式统一？？
+                tsy = 0;
+                tey = 1;
+            }
+            else if(y0 < y1){
+                //满足条件，Y方向起始边为YD
+                tsy = (float)(YD - y0) / (float)(y1 - y0);
+                tey = (float)(YU - y0) / (float)(y1 - y0);
+            }
+            else
+            {
+                tsy = (float)(YU - y0) / (float)(y1 - y0);
+                tey = (float)(YD - y0) / (float)(y1 - y0);
+            }
+
+            tsx = Math.Max(tsx, tsy);
+            tsx = Math.Max(tsx, 0);
+
+            tex = Math.Min(tex, tey);
+            tex = Math.Min(tex, 1);
+            if(tsx < tex)//该条件满足，裁剪结果才有可见部分
+            {
+                int xx0, yy0, xx1, yy1;
+                xx0 = (int)(x0 + (x1 - x0) * tsx);
+                yy0 = (int)(y0 + (y1 - y0) * tsx);
+
+                xx1 = (int)(x0 + (x1 - x0) * tex);
+                yy1 = (int)(y0 + (y1 - y0) * tex);
+
+                Pen DrawPen = new Pen(Color.Yellow, 3);
+                g.DrawLine(DrawPen, xx0, yy0, xx1, yy1);
+
+            }
+
+        }
+        private void LiangCut_Click(object sender, EventArgs e)
+        {
+            initializeLine(23);
+            Graphics g = CreateGraphics();
+
+            XL = 100;
+            XR = 400;
+            YD = 100;
+            YU = 400;
+            pointsgroup[0] = new Point(XL, YD);
+            pointsgroup[1] = new Point(XR, YD);
+            pointsgroup[2] = new Point(XR, YU);
+            pointsgroup[3] = new Point(XL, YU);
+            g.DrawPolygon(Pens.Blue, pointsgroup);
+
+        }
+
+        private void EdgeClipping(int linecode)
+        {
+            float x, y;
+            int n, i, number1;
+            Point[] q = new Point[200];//裁剪结果
+            number1 = 0;
+            if (linecode == 0)
+            {
+                for (n = 0; n < PressNum; n++)
+                {
+                    if (group[n].X < XL && group[n + 1].X < XL)
+                        //q[number1++] = group[n];
+
+                        ;
+                    else if (group[n].X >= XL && group[n + 1].X >= XL)//都在内，输出后点
+                        q[number1++] = group[n + 1];
+                    else if (group[n].X >= XL && group[n + 1].X < XL)
+                    {
+                        y = group[n].Y + (float)(group[n + 1].Y - group[n].Y) / (float)(group[n + 1].X - group[n].X) * (float)(XL - group[n].X);
+                        q[number1].X = XL;
+                        q[number1++].Y = (int)y;
+                    }
+                    else if (group[n].X < XL && group[n + 1].X >= XL)//一内一外，输出与边框交点
+                    {
+                        y = group[n].Y + (float)(group[n + 1].Y - group[n].Y) / (float)(group[n + 1].X - group[n].X) * (float)(XL - group[n].X);
+                        q[number1].X = XL;
+                        q[number1++].Y = (int)y;
+                        q[number1++] = group[n + 1];
+                    }
+                }
+                for (i = 0; i < number1; i++)//裁剪结果放入group数组
+                    group[i] = q[i];
+                group[number1] = q[0];
+                PressNum += number1;
+            }
+            else if (linecode == 1)
+            {
+                for (n = 0; n < PressNum; n++)
+                {
+                    if (group[n].Y >= YU && group[n + 1].Y >= YU)
+                        //q[number1++] = group[n];
+                        ;
+                    else if (group[n].Y < YU && group[n + 1].Y < YU)//都在内，输出后点
+                        q[number1++] = group[n + 1];
+                    else if (group[n].Y < YU && group[n + 1].Y >= YU)
+                    {
+                        x = group[n].X + (float)(group[n + 1].X - group[n].X) / (float)(group[n + 1].Y - group[n].Y) * (float)(YU - group[n].Y);
+                        q[number1].X = (int)x;
+                        q[number1++].Y = YU;
+                    }
+                    else if (group[n].Y >= YU && group[n + 1].Y < YU)//一内一外，输出与边框交点
+                    {
+                        x = group[n].X + (float)(group[n + 1].X - group[n].X) / (float)(group[n + 1].Y - group[n].Y) * (float)(YU - group[n].Y);
+                        q[number1].X = (int)x;
+                        q[number1++].Y = YU;
+                        q[number1++] = group[n + 1];
+                    }
+                    for (i = 0; i < number1; i++)//裁剪结果放入group数组
+                        group[i] = q[i];
+                    group[number1] = q[0];
+                    PressNum = number1;
+                }
+            }
+            else if (linecode == 2)
+            {
+                for (n = 0; n < PressNum; n++)
+                {
+                    if (group[n].X >= XR && group[n + 1].X >= XR)
+                        // q[number1++]=group[n];
+                        ;
+                    else if (group[n].X < XR && group[n + 1].X < XR)//都在内，输出后点
+                        q[number1++] = group[n + 1];
+                    else if (group[n].X < XR && group[n + 1].X >= XR)
+                    {
+                        y = group[n].Y + (float)(group[n + 1].Y - group[n].Y) / (float)(group[n + 1].X - group[n].X) * (float)(XR - group[n].X);
+                        q[number1].X = XR;
+                        q[number1++].Y = (int)y;
+                    }
+                    else if (group[n].X >= XR && group[n + 1].X < XR)//一内一外，输出与边框交点
+                    {
+                        y = group[n].Y + (float)(group[n + 1].Y - group[n].Y) / (float)(group[n + 1].X - group[n].X) * (float)(XR - group[n].X);
+                        q[number1].X = XR;
+                        q[number1++].Y = (int)y;
+                        q[number1++] = group[n + 1];
+                    }
+                }
+                for (i = 0; i < number1; i++)//裁剪结果放入group数组
+                    group[i] = q[i];
+                group[number1] = q[0];
+                PressNum = number1;
+            }
+            else
+            {
+                for (n = 0; n < PressNum; n++)
+                {
+                    if (group[n].Y < YD && group[n + 1].Y < YD)
+                        //q[number1++]=group[n];
+                        ;
+                    else if (group[n].Y >= YD && group[n + 1].Y >= YD)//都在内，输出后点
+                        q[number1++] = group[n + 1];
+                    else if (group[n].Y >= YD && group[n + 1].Y < YD)
+                    {
+                        x = group[n].X + (float)(group[n + 1].X - group[n].X) / (float)(group[n + 1].Y - group[n].Y) * (float)(YD - group[n].Y);
+                        q[number1].X = (int)x;
+                        q[number1++].Y = YD;
+                    }
+                    else if (group[n].Y < YD && group[n + 1].Y >= YD)//一内一外，输出与边框交点
+                    {
+                        x = group[n].X + (float)(group[n + 1].X - group[n].X) / (float)(group[n + 1].Y - group[n].Y) * (float)(YD - group[n].Y);
+                        q[number1].X = (int)x;
+                        q[number1++].Y = YD;
+                        q[number1++] = group[n + 1];
+                    }
+                    for (i = 0; i < number1; i++)//裁剪结果放入group数组
+                        group[i] = q[i];
+                    group[number1] = q[0];
+                    PressNum = number1;
+                }
+            }
+        }
+        private void WindowCut1()
+        {
+            group[PressNum] = group[0];
+            for(int i = 0; i < 4; i++)
+            {
+                EdgeClipping(i);
+            }
+            Graphics g = CreateGraphics();
+
+            Pen DrawPen = new Pen(Color.Yellow, 3);
+            for(int i = 0;i < PressNum; i++)//绘制裁剪多边形
+            {
+                g.DrawLine(DrawPen, group[i], group[i + 1]);
+            }
+
+        }
+        private void WindowCut_Click(object sender, EventArgs e)
+        {
+            initializeLine(24);
+            Graphics g = CreateGraphics();
+            g.Clear(BackColor1);
+
             XL = 100;
             XR = 400;
             YD = 100;
@@ -689,14 +945,10 @@ namespace CG
             g.DrawPolygon(Pens.Blue, pointsgroup);
         }
 
-        private void 中点圆ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void BresenhamCircle_Click(object sender, EventArgs e)
         {
             initializeLine(5);//圆与直线初始化通用
+            CurrentGraph.Clear(BackColor1);
             Graphics g = CreateGraphics();//生成画布
             g.Clear(BackColor1);//画布上色
         }
@@ -705,6 +957,7 @@ namespace CG
         {
             MenuID = 31;//扫描线填充算法
             initializeLine(31);
+            CurrentGraph.Clear(BackColor1);
             Graphics g = CreateGraphics();//创建画布
             g.Clear(BackColor1);//背景填充
         }
@@ -712,6 +965,7 @@ namespace CG
         private void CohenCut_Click(object sender, EventArgs e)
         {
             initializeLine(21);
+            CurrentGraph.Clear(BackColor1);
             Graphics g = CreateGraphics();
             XL = 100;
             XR = 400;
@@ -722,6 +976,7 @@ namespace CG
             pointsgroup[2] = new Point(XR, YU);
             pointsgroup[3] = new Point(XL, YU);
             g.DrawPolygon(Pens.Blue, pointsgroup);
+            CurrentGraph = g;
 
         }
     }

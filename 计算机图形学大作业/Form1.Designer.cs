@@ -50,6 +50,8 @@ namespace CG
             this.投影ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.消隐ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.退出ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.LiangCut = new System.Windows.Forms.ToolStripMenuItem();
+            this.WindowCut = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -154,7 +156,9 @@ namespace CG
             // 
             this.二维图形裁剪ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.CohenCut,
-            this.MidCut});
+            this.MidCut,
+            this.LiangCut,
+            this.WindowCut});
             this.二维图形裁剪ToolStripMenuItem.Name = "二维图形裁剪ToolStripMenuItem";
             this.二维图形裁剪ToolStripMenuItem.Size = new System.Drawing.Size(111, 24);
             this.二维图形裁剪ToolStripMenuItem.Text = "二维图形裁剪";
@@ -162,14 +166,14 @@ namespace CG
             // CohenCut
             // 
             this.CohenCut.Name = "CohenCut";
-            this.CohenCut.Size = new System.Drawing.Size(181, 26);
+            this.CohenCut.Size = new System.Drawing.Size(204, 26);
             this.CohenCut.Text = "Cohen算法";
             this.CohenCut.Click += new System.EventHandler(this.CohenCut_Click);
             // 
             // MidCut
             // 
             this.MidCut.Name = "MidCut";
-            this.MidCut.Size = new System.Drawing.Size(181, 26);
+            this.MidCut.Size = new System.Drawing.Size(204, 26);
             this.MidCut.Text = "中点分割算法";
             this.MidCut.Click += new System.EventHandler(this.MidCut_Click);
             // 
@@ -206,6 +210,20 @@ namespace CG
             this.退出ToolStripMenuItem.Size = new System.Drawing.Size(51, 24);
             this.退出ToolStripMenuItem.Text = "退出";
             this.退出ToolStripMenuItem.Click += new System.EventHandler(this.退出ToolStripMenuItem_Click);
+            // 
+            // LiangCut
+            // 
+            this.LiangCut.Name = "LiangCut";
+            this.LiangCut.Size = new System.Drawing.Size(204, 26);
+            this.LiangCut.Text = "梁友栋算法";
+            this.LiangCut.Click += new System.EventHandler(this.LiangCut_Click);
+            // 
+            // WindowCut
+            // 
+            this.WindowCut.Name = "WindowCut";
+            this.WindowCut.Size = new System.Drawing.Size(204, 26);
+            this.WindowCut.Text = "窗口对多边形裁剪";
+            this.WindowCut.Click += new System.EventHandler(this.WindowCut_Click);
             // 
             // Form1
             // 
@@ -247,6 +265,8 @@ namespace CG
         private System.Windows.Forms.ToolStripMenuItem ScanLineFill;
         private System.Windows.Forms.ToolStripMenuItem CohenCut;
         private System.Windows.Forms.ToolStripMenuItem MidCut;
+        private System.Windows.Forms.ToolStripMenuItem LiangCut;
+        private System.Windows.Forms.ToolStripMenuItem WindowCut;
     }
 }
 
