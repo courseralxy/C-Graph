@@ -45,13 +45,15 @@ namespace CG
             this.二维图形裁剪ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.CohenCut = new System.Windows.Forms.ToolStripMenuItem();
             this.MidCut = new System.Windows.Forms.ToolStripMenuItem();
+            this.LiangCut = new System.Windows.Forms.ToolStripMenuItem();
+            this.WindowCut = new System.Windows.Forms.ToolStripMenuItem();
             this.图形填充ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ScanLineFill = new System.Windows.Forms.ToolStripMenuItem();
             this.投影ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.消隐ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.退出ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.LiangCut = new System.Windows.Forms.ToolStripMenuItem();
-            this.WindowCut = new System.Windows.Forms.ToolStripMenuItem();
+            this.PingMove = new System.Windows.Forms.ToolStripMenuItem();
+            this.图形旋转ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -148,6 +150,9 @@ namespace CG
             // 
             // 二维图形变换ToolStripMenuItem
             // 
+            this.二维图形变换ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.PingMove,
+            this.图形旋转ToolStripMenuItem});
             this.二维图形变换ToolStripMenuItem.Name = "二维图形变换ToolStripMenuItem";
             this.二维图形变换ToolStripMenuItem.Size = new System.Drawing.Size(111, 24);
             this.二维图形变换ToolStripMenuItem.Text = "二维图形变换";
@@ -176,6 +181,20 @@ namespace CG
             this.MidCut.Size = new System.Drawing.Size(204, 26);
             this.MidCut.Text = "中点分割算法";
             this.MidCut.Click += new System.EventHandler(this.MidCut_Click);
+            // 
+            // LiangCut
+            // 
+            this.LiangCut.Name = "LiangCut";
+            this.LiangCut.Size = new System.Drawing.Size(204, 26);
+            this.LiangCut.Text = "梁友栋算法";
+            this.LiangCut.Click += new System.EventHandler(this.LiangCut_Click);
+            // 
+            // WindowCut
+            // 
+            this.WindowCut.Name = "WindowCut";
+            this.WindowCut.Size = new System.Drawing.Size(204, 26);
+            this.WindowCut.Text = "窗口对多边形裁剪";
+            this.WindowCut.Click += new System.EventHandler(this.WindowCut_Click);
             // 
             // 图形填充ToolStripMenuItem
             // 
@@ -211,19 +230,19 @@ namespace CG
             this.退出ToolStripMenuItem.Text = "退出";
             this.退出ToolStripMenuItem.Click += new System.EventHandler(this.退出ToolStripMenuItem_Click);
             // 
-            // LiangCut
+            // PingMove
             // 
-            this.LiangCut.Name = "LiangCut";
-            this.LiangCut.Size = new System.Drawing.Size(204, 26);
-            this.LiangCut.Text = "梁友栋算法";
-            this.LiangCut.Click += new System.EventHandler(this.LiangCut_Click);
+            this.PingMove.Name = "PingMove";
+            this.PingMove.Size = new System.Drawing.Size(181, 26);
+            this.PingMove.Text = "图形平移";
+            this.PingMove.Click += new System.EventHandler(this.PingMove_Click);
             // 
-            // WindowCut
+            // 图形旋转ToolStripMenuItem
             // 
-            this.WindowCut.Name = "WindowCut";
-            this.WindowCut.Size = new System.Drawing.Size(204, 26);
-            this.WindowCut.Text = "窗口对多边形裁剪";
-            this.WindowCut.Click += new System.EventHandler(this.WindowCut_Click);
+            this.图形旋转ToolStripMenuItem.Name = "图形旋转ToolStripMenuItem";
+            this.图形旋转ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.图形旋转ToolStripMenuItem.Text = "图形旋转";
+            this.图形旋转ToolStripMenuItem.Click += new System.EventHandler(this.图形旋转ToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -267,6 +286,8 @@ namespace CG
         private System.Windows.Forms.ToolStripMenuItem MidCut;
         private System.Windows.Forms.ToolStripMenuItem LiangCut;
         private System.Windows.Forms.ToolStripMenuItem WindowCut;
+        private System.Windows.Forms.ToolStripMenuItem PingMove;
+        private System.Windows.Forms.ToolStripMenuItem 图形旋转ToolStripMenuItem;
     }
 }
 

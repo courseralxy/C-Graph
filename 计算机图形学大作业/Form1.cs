@@ -8,12 +8,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Drawing.Drawing2D;
 
 namespace CG
 {
     public partial class Form1 : Form
     {
-
+        double Pi = 3.1415926;
         public Form1()
         {
             InitializeComponent();
@@ -110,6 +111,58 @@ namespace CG
                         return;
                     }
                     else BresenhamCircle1(FirstX, FirstY, e.X, e.Y);
+                }
+                PressNum = (PressNum + 1) % 2;
+            }
+            else if(MenuID == 11)
+            {
+                if(PressNum == 0)
+                {
+                    FirstX = e.X;
+                    FirstY = e.Y;
+
+                }
+                else
+                {
+                    for(int i = 0; i < 4; i++)
+                    {
+                        pointsgroup[i].X += e.X - FirstX;
+                        pointsgroup[i].Y += e.Y - FirstY;
+                    }
+                    g.DrawPolygon(Pens.Blue, pointsgroup);
+                }
+                PressNum = (PressNum + 1) % 2;
+            }
+            else if(MenuID == 12)//图形旋转功能
+            {
+                if (PressNum == 0)
+                {
+                    FirstX = e.X;
+                    FirstY = e.Y;
+                }
+                else
+                {
+                    double a;
+                    if (e.X == FirstX && e.Y == FirstY)//两点重合，不旋转
+                        return;
+                    if (e.X == FirstX && e.Y > FirstY)//分母为零
+                        a = Pi / 2.0;
+                    else if (e.X == FirstX && e.Y < FirstY)
+                    {
+                        a = Pi / 2.0 * 3.0;
+                    }
+                    else
+                        a = Math.Atan((double)(e.Y - FirstY) / (double)(e.X - FirstX));
+                    a = a / Pi * 180.0;//转化为角度
+                    int x0 = 150, y0 = 150;
+                    Matrix DrawMatrix = new Matrix();//利用矩阵计算
+                    DrawMatrix.Translate(-x0, -y0);
+                    DrawMatrix.Rotate((float)a, MatrixOrder.Append);
+                    DrawMatrix.Translate(x0, y0, MatrixOrder.Append);
+
+                    //Graphics g = CreateGraphics();
+                    g.Transform = DrawMatrix;
+                    g.DrawPolygon(Pens.Blue, pointsgroup);
                 }
                 PressNum = (PressNum + 1) % 2;
             }
@@ -802,58 +855,74 @@ namespace CG
             {
                 for (n = 0; n < PressNum; n++)
                 {
-                    if (group[n].X < XL && group[n + 1].X < XL)
-                        //q[number1++] = group[n];
-
+                    if (group[n].X < XL && group[n + 1].X < XL)//都在外，一个也不保留
                         ;
-                    else if (group[n].X >= XL && group[n + 1].X >= XL)//都在内，输出后点
-                        q[number1++] = group[n + 1];
-                    else if (group[n].X >= XL && group[n + 1].X < XL)
+                    //q[number1++] = group[n];
+                    else if (group[n].X >= XL && group[n + 1].X >= XL)//都在内，保留后点。因为如果上一个是外入内或者全内，则前点已被保留
                     {
-                        y = group[n].Y + (float)(group[n + 1].Y - group[n].Y) / (float)(group[n + 1].X - group[n].X) * (float)(XL - group[n].X);
-                        q[number1].X = XL;
-                        q[number1++].Y = (int)y;
+                        q[number1] = group[n + 1];
+                        number1++;
                     }
-                    else if (group[n].X < XL && group[n + 1].X >= XL)//一内一外，输出与边框交点
+                    else if (group[n].X >= XL && group[n + 1].X < XL)//内入外，保留边界点，因为前点已经被保留了
+                    {
+                        y = group[n].Y + (float)(group[n + 1].Y - group[n].Y) / (float)(group[n + 1].X - group[n].X) * (float)(XL - group[n].X);
+                        //q[number1] = group[n];//.X = XL;
+                        //number1++;
+                        q[number1].Y = (int)y;
+                        q[number1].X = XL;
+                        number1++;
+                    }
+                    else if (group[n].X < XL && group[n + 1].X >= XL)//外入内，输出与边框交点和后点
                     {
                         y = group[n].Y + (float)(group[n + 1].Y - group[n].Y) / (float)(group[n + 1].X - group[n].X) * (float)(XL - group[n].X);
                         q[number1].X = XL;
-                        q[number1++].Y = (int)y;
-                        q[number1++] = group[n + 1];
+                        q[number1].Y = (int)y;
+                        number1++;
+                        q[number1] = group[n + 1];
+                        number1++;
                     }
                 }
                 for (i = 0; i < number1; i++)//裁剪结果放入group数组
                     group[i] = q[i];
                 group[number1] = q[0];
-                PressNum += number1;
+                PressNum = number1;
             }
             else if (linecode == 1)
             {
                 for (n = 0; n < PressNum; n++)
                 {
-                    if (group[n].Y >= YU && group[n + 1].Y >= YU)
+                    if (group[n].Y >= YU && group[n + 1].Y >= YU)//外，丢弃
                         //q[number1++] = group[n];
                         ;
-                    else if (group[n].Y < YU && group[n + 1].Y < YU)//都在内，输出后点
-                        q[number1++] = group[n + 1];
-                    else if (group[n].Y < YU && group[n + 1].Y >= YU)
+                    else if (group[n].Y < YU && group[n + 1].Y < YU)//都在内，输出后点，如果上一次是外入内或者都内，那么前点已被保留
+                    {
+                        q[number1] = group[n + 1];
+                        number1++;
+                    }
+                    else if (group[n].Y < YU && group[n + 1].Y >= YU)//从内到外，保留边界点，如果上一次是外入内或者都内，那么前点已被保留
+                    {
+                        x = group[n].X + (float)(group[n + 1].X - group[n].X) / (float)(group[n + 1].Y - group[n].Y) * (float)(YU - group[n].Y);
+                        //q[number1] = group[n];
+                        //number1++;
+                        q[number1].X = (int)x;
+                        q[number1].Y = YU;
+                        number1++;
+                    }
+                    else if (group[n].Y >= YU && group[n + 1].Y < YU)//外入内，保留边界点和后点
                     {
                         x = group[n].X + (float)(group[n + 1].X - group[n].X) / (float)(group[n + 1].Y - group[n].Y) * (float)(YU - group[n].Y);
                         q[number1].X = (int)x;
-                        q[number1++].Y = YU;
+                        q[number1].Y = YU;
+                        number1++;
+                        q[number1] = group[n + 1];
+                        number1++;
                     }
-                    else if (group[n].Y >= YU && group[n + 1].Y < YU)//一内一外，输出与边框交点
-                    {
-                        x = group[n].X + (float)(group[n + 1].X - group[n].X) / (float)(group[n + 1].Y - group[n].Y) * (float)(YU - group[n].Y);
-                        q[number1].X = (int)x;
-                        q[number1++].Y = YU;
-                        q[number1++] = group[n + 1];
-                    }
-                    for (i = 0; i < number1; i++)//裁剪结果放入group数组
-                        group[i] = q[i];
-                    group[number1] = q[0];
-                    PressNum = number1;
+
                 }
+                for (i = 0; i < number1; i++)//裁剪结果放入group数组
+                    group[i] = q[i];
+                group[number1] = q[0];
+                PressNum = number1;
             }
             else if (linecode == 2)
             {
@@ -864,18 +933,21 @@ namespace CG
                         ;
                     else if (group[n].X < XR && group[n + 1].X < XR)//都在内，输出后点
                         q[number1++] = group[n + 1];
-                    else if (group[n].X < XR && group[n + 1].X >= XR)
+                    else if (group[n].X < XR && group[n + 1].X >= XR)//内入外，保留边界点
                     {
                         y = group[n].Y + (float)(group[n + 1].Y - group[n].Y) / (float)(group[n + 1].X - group[n].X) * (float)(XR - group[n].X);
                         q[number1].X = XR;
-                        q[number1++].Y = (int)y;
+                        q[number1].Y = (int)y;
+                        number1++;
                     }
-                    else if (group[n].X >= XR && group[n + 1].X < XR)//一内一外，输出与边框交点
+                    else if (group[n].X >= XR && group[n + 1].X < XR)//外入内，输出与边框交点和后点
                     {
                         y = group[n].Y + (float)(group[n + 1].Y - group[n].Y) / (float)(group[n + 1].X - group[n].X) * (float)(XR - group[n].X);
                         q[number1].X = XR;
-                        q[number1++].Y = (int)y;
-                        q[number1++] = group[n + 1];
+                        q[number1].Y = (int)y;
+                        number1++;
+                        q[number1] = group[n + 1];
+                        number1++;
                     }
                 }
                 for (i = 0; i < number1; i++)//裁剪结果放入group数组
@@ -892,24 +964,28 @@ namespace CG
                         ;
                     else if (group[n].Y >= YD && group[n + 1].Y >= YD)//都在内，输出后点
                         q[number1++] = group[n + 1];
-                    else if (group[n].Y >= YD && group[n + 1].Y < YD)
+                    else if (group[n].Y >= YD && group[n + 1].Y < YD)//内入外，保留边界点
                     {
                         x = group[n].X + (float)(group[n + 1].X - group[n].X) / (float)(group[n + 1].Y - group[n].Y) * (float)(YD - group[n].Y);
                         q[number1].X = (int)x;
-                        q[number1++].Y = YD;
+                        q[number1].Y = YD;
+                        number1++;
                     }
-                    else if (group[n].Y < YD && group[n + 1].Y >= YD)//一内一外，输出与边框交点
+                    else if (group[n].Y < YD && group[n + 1].Y >= YD)//外入内，输出与边框交点和后点
                     {
                         x = group[n].X + (float)(group[n + 1].X - group[n].X) / (float)(group[n + 1].Y - group[n].Y) * (float)(YD - group[n].Y);
                         q[number1].X = (int)x;
-                        q[number1++].Y = YD;
-                        q[number1++] = group[n + 1];
+                        q[number1].Y = YD;
+                        number1++;
+                        q[number1] = group[n + 1];
+                        number1++;
                     }
-                    for (i = 0; i < number1; i++)//裁剪结果放入group数组
-                        group[i] = q[i];
-                    group[number1] = q[0];
-                    PressNum = number1;
+
                 }
+                for (i = 0; i < number1; i++)//裁剪结果放入group数组
+                    group[i] = q[i];
+                group[number1] = q[0];
+                PressNum = number1;
             }
         }
         private void WindowCut1()
@@ -918,7 +994,23 @@ namespace CG
             for(int i = 0; i < 4; i++)
             {
                 EdgeClipping(i);
+              
+                
+                    Pen pen;
+                if (i == 0) pen = new Pen(Color.Blue, 3);
+                else if (i == 1) pen = new Pen(Color.Orange, 3);
+                else if (i == 2) pen = new Pen(Color.Green, 3);
+                else pen = new Pen(Color.Yellow, 3);
+                Graphics tmp = CreateGraphics();
+                for (int j = 0; j < PressNum; j++)
+                {
+                    tmp.DrawLine(pen, group[j], group[j + 1]);
+                }
+                System.Threading.Thread.Sleep(1000);
+
+
             }
+            /*
             Graphics g = CreateGraphics();
 
             Pen DrawPen = new Pen(Color.Yellow, 3);
@@ -926,6 +1018,7 @@ namespace CG
             {
                 g.DrawLine(DrawPen, group[i], group[i + 1]);
             }
+            */
 
         }
         private void WindowCut_Click(object sender, EventArgs e)
@@ -943,6 +1036,28 @@ namespace CG
             pointsgroup[2] = new Point(XR, YU);
             pointsgroup[3] = new Point(XL, YU);
             g.DrawPolygon(Pens.Blue, pointsgroup);
+        }
+
+        private void PingMove_Click(object sender, EventArgs e)
+        {
+            initializeLine(11);
+            Graphics g = CreateGraphics();
+            pointsgroup[0] = new Point(100, 100);
+            pointsgroup[1] = new Point(200, 100);
+            pointsgroup[2] = new Point(200, 200);
+            pointsgroup[3] = new Point(100, 200);
+            g.DrawPolygon(Pens.Red, pointsgroup);
+        }
+
+        private void 图形旋转ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            initializeLine(12);
+            Graphics g = CreateGraphics();
+            pointsgroup[0] = new Point(100, 100);
+            pointsgroup[1] = new Point(200, 100);
+            pointsgroup[2] = new Point(200, 200);
+            pointsgroup[3] = new Point(100, 200);
+            g.DrawPolygon(Pens.Red, pointsgroup);
         }
 
         private void BresenhamCircle_Click(object sender, EventArgs e)
