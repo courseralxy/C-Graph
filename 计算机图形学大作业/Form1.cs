@@ -38,6 +38,7 @@ namespace CG
         public int MenuID;//DDALine功能选择
         public int PressNum;//DDAline，识别起始点还是结束点
         public int PointNum;//图线填充，记录点个数
+        public int SaveNumber;//Bezier曲线，控制点编号
         public int FirstX;//DDALine，起始端点坐标
         public int FirstY;//DDALine
         public int OldX;//DDALine
@@ -54,7 +55,7 @@ namespace CG
             MenuID = mid;
             PressNum = 0;
             PointNum = 0;
-            CurrentGraph.Clear(BackColor1);
+            //CurrentGraph.Clear(BackColor1);
         }
 
         private void 退出ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -114,6 +115,7 @@ namespace CG
                 }
                 PressNum = (PressNum + 1) % 2;
             }
+            
             else if(MenuID == 11)
             {
                 if(PressNum == 0)
@@ -216,6 +218,51 @@ namespace CG
                         MidCut1(FirstX, FirstY, e.X, e.Y);
                     else if (MenuID == 23)
                         LiangCut1(FirstX, FirstY, e.X, e.Y);
+                    PressNum = 0;
+                }
+            }
+            else if (MenuID == 7 || MenuID == 8)
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    group[PointNum].X = e.X;
+                    group[PointNum].Y = e.Y;
+                    PointNum++;
+                    g.DrawLine(Pens.Black, e.X - 5, e.Y, e.X + 5, e.Y);//Bezier曲线选点并做十字标志
+                    g.DrawLine(Pens.Black, e.X, e.Y - 5, e.X, e.Y + 5);
+
+                    PressNum = 1;
+                }
+                if ((e.Button == MouseButtons.Right) && (PointNum > 3))
+                {
+                    if (MenuID == 7)
+                    {
+                        Bezier1(1);//绘制曲线
+                        MenuID = 107;//讲后续操作改为修改控制点位置
+                    }
+                    else
+                    {
+                        BSample1(1);//绘制曲线
+                        MenuID = 108;
+                    }
+                    PressNum = 0;
+                }
+            }
+            else if(MenuID == 107 || MenuID == 108)
+            {
+                if((e.Button == MouseButtons.Left)&&PressNum == 0)
+                {
+                    for(int i = 0;i<PointNum;i++)
+                    {
+                        if((e.X>=(group[i].X - 5))&&(e.X<=group[i].X+ 5)&&(e.Y>=group[i].Y-5)&&(e.Y<=group[i].Y+5))
+                        {
+                            SaveNumber = i;
+                            PressNum = 1;
+                        }
+                    }
+                }
+                else if((e.Button == MouseButtons.Right)&&(PointNum > 3))
+                {
                     PressNum = 0;
                 }
             }
@@ -732,6 +779,28 @@ namespace CG
                     }
                 }
             }
+            else if(((MenuID == 107)||(MenuID == 108)) && (PressNum > 0))
+            {
+                if(!((group[SaveNumber].X==e.X)&&(group[SaveNumber].Y == e.Y)))
+                {
+                    g.DrawLine(BackgroundPen, group[SaveNumber].X - 5, group[SaveNumber].Y, group[SaveNumber].X + 5, group[SaveNumber].Y);
+                    g.DrawLine(BackgroundPen, group[SaveNumber].X, group[SaveNumber].Y - 5, group[SaveNumber].X, group[SaveNumber].Y + 5);
+                    if (MenuID == 107)
+                        Bezier1(0);//擦除十字标志和旧线
+                    else
+                        BSample1(0);
+                    g.DrawLine(DrawPen, e.X - 5, e.Y, e.X + 5, e.Y);
+                    g.DrawLine(DrawPen, e.X, e.Y - 5, e.X, e.Y + 5);
+                    group[SaveNumber].X = e.X;
+                    group[SaveNumber].Y = e.Y;
+                    if (MenuID == 107)
+                        Bezier1(1);
+                    else
+                        BSample1(1);
+
+               
+                }
+            }
             CurrentGraph = g;
         }
       
@@ -1058,6 +1127,201 @@ namespace CG
             pointsgroup[2] = new Point(200, 200);
             pointsgroup[3] = new Point(100, 200);
             g.DrawPolygon(Pens.Red, pointsgroup);
+        }
+
+        private void Bezier_4(int mode, Point p1,Point p2,Point p3,Point p4)
+        {
+            int i, n;
+            Graphics g = CreateGraphics();
+            Point p = new Point();
+            Point oldp = new Point();
+            double t1, t2, t3, t4,dt;
+            Pen DrawPen = new Pen(Color.Red, 1);
+            n = 100;
+            if(mode == 2)
+            {
+                DrawPen = new Pen(Color.Red, 1);
+            }
+            else if(mode == 1)
+            {
+                DrawPen = new Pen(Color.Black, 1);
+            }
+            else if(mode == 0)
+            {
+                DrawPen = new Pen(Color.White, 1);
+            }
+            oldp = p1;
+            dt = 1.0 / n;//参数t的间隔，分为100段，用100段直线表示一条曲线
+            for(i = 1;i <= n; i++)//Bezier参数方程计算
+            {
+                t1 = (1.0 - i * dt) * (1.0 - i * dt) * (1.0 - i * dt);
+                t2 = i * dt * (1.0 - i * dt) * (1.0 - i * dt);
+                t3 = i * i * dt * dt * (1.0 - i * dt);
+                t4 = i * i * i * dt * dt * dt;
+                p.X = (int)(t1 * p1.X + 3 * t2 * p2.X + 3 * t3 * p3.X + t4 * p4.X);
+                p.Y = (int)(t1 * p1.Y + 3 * t2 * p2.Y + 3 * t3 * p3.Y + t4 * p4.Y);
+                g.DrawLine(DrawPen, oldp, p);
+                oldp = p;
+            }
+        }
+        private void Bezier_41(int mode, Point p1, Point p2, Point p3,Point p4)
+        {
+            Graphics g = CreateGraphics();
+            Point p = new Point();
+            Point oldp = new Point();
+            double t, dt;
+            Point[] g1 = new Point[4];
+            g1[0] = p1;
+            g1[1] = p2;
+            g1[2] = p3;
+            g1[3] = p4;
+            Pen DrawPen = new Pen(Color.Red, 1);
+            int n = 100;
+            if (mode == 2)
+            {
+                DrawPen = new Pen(Color.Red, 1);
+            }
+            else if (mode == 1)
+            {
+                DrawPen = new Pen(Color.Black, 1);
+            }
+            else if (mode == 0)
+            {
+                DrawPen = new Pen(Color.White, 1);
+            }
+            oldp = p1;
+            dt = 1.0 / n;
+            for(int i = 1; i <= n; i++)
+            {
+                t = i * dt;
+                for(int k = 3;k > 0; k--)
+                {
+                    for(int j = 0; j < k; j++)
+                    {
+                        g1[j].X = (int)((1.0 - t) * g1[j].X + t * g1[j + 1].X);
+                        g1[j].Y = (int)((1.0 - t) * g1[j].Y + t * g1[j + 1].Y);
+                    }
+                }
+                p = g1[0];
+                g.DrawLine(DrawPen, oldp, p);
+                oldp = p;
+            }
+
+        }
+        private void Bezier1(int mode)
+        {
+            Point[] p = new Point[300];//储存完整的Bezier曲线控制点
+            int i = 0, j = 0;
+            p[i] = group[j];
+            i++;
+            j++;
+            p[i] = group[j];
+            j++;
+            i++;
+            while(j <= PointNum - 2)
+            {
+                p[i] = group[j];
+                j++;
+                i++;
+                p[i].X = (group[j].X + group[j - 1].X) / 2;
+                p[i].Y = (group[j].Y + group[j - 1].Y) / 2;
+                i++;
+                p[i] = group[j];
+                i++;
+                j++;
+
+            };
+            for(j = 0; j < i - 3; j += 3)
+            {
+                Bezier_4(mode, p[j], p[j + 1], p[j + 2], p[j + 3]);
+            }
+        }
+        private void BezierCurve_Click(object sender, EventArgs e)
+        {
+            //initializeLine(7);
+            MenuID = 7;
+            PointNum = 0;
+            PressNum = 0;
+            Graphics g = CreateGraphics();
+            g.Clear(BackColor1);
+        }
+
+        private void Form1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            Graphics g = CreateGraphics();
+            Pen DrawPen = new Pen(Color.White, 1);
+            if (MenuID == 107 || MenuID == 108)
+            {
+                for (int i = 0; i < PointNum; i++)
+                {
+                    g.DrawLine(DrawPen, group[i].X - 5, group[i].Y, group[i].X + 5, group[i].Y);
+                    g.DrawLine(DrawPen, group[i].X, group[i].Y - 5, group[i].X, group[i].Y + 5);
+                }
+                if (MenuID == 107)
+                {
+                    Bezier1(2);//绘制Bezier曲线
+                    //initializeLine(7);//将操作改回Bezier
+                    MenuID = 7;
+                }
+                else
+                {
+                    BSample1(2);
+                    MenuID = 8;
+                }
+                PressNum = 0;
+                PointNum = 0;
+            }
+        }
+
+        private void BSample_4(int mode, Point p0, Point p1,Point p2,Point p3)
+        {
+            Graphics g = CreateGraphics();
+
+            Point p = new Point();
+            Point oldp = new Point();
+            Pen DrawPen = new Pen(Color.Red, 1);
+            int n = 100;
+            if(mode == 2)
+            {
+                DrawPen = new Pen(Color.Red, 1);
+            }
+            else if(mode == 1)
+            {
+                DrawPen = new Pen(Color.Black, 1);
+
+            }
+            else if(mode == 0)
+            {
+                DrawPen = new Pen(Color.White, 1);
+            }
+            oldp = p;
+            double dt = 1.0 / n;
+            for(double t = 0.0;t <= 1.0; t += dt)
+            {
+                double t1 = (1.0 - t) * (1.0 - t) * (1.0 - t);
+                double t2 = 3.0 * t * t * t - 6.0 * t * t + 4.0;
+                double t3 = -3.0 * t * t * t + 3.0 * t * t + 3.0 * t + 1.0;
+                double t4 = t * t * t;
+                p.X = (int)((t1 * p0.X + t2 * p1.X + t3 * p2.X + t4 * p3.X) / 6.0);
+                p.Y = (int)((t1 * p0.Y + t2 * p1.Y + t3 * p2.Y + t4 * p3.Y) / 6.0);
+                if (t > 0)
+                    g.DrawLine(DrawPen, oldp, p);
+                oldp = p;
+            }
+        }
+        private void BSample1(int mode)
+        {
+            for(int i = 0; i < PointNum - 3; i++)
+            {
+                BSample_4(mode, group[i], group[i + 1], group[i + 2], group[i + 3]);
+            }
+        }
+        
+        private void BSampleCurve_Click(object sender, EventArgs e)
+        {
+            initializeLine(8);
+            Graphics g = CreateGraphics();
+            g.Clear(BackColor1);
         }
 
         private void BresenhamCircle_Click(object sender, EventArgs e)

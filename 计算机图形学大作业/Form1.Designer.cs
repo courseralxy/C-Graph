@@ -38,10 +38,12 @@ namespace CG
             this.MidCircle = new System.Windows.Forms.ToolStripMenuItem();
             this.BresenhamCircle = new System.Windows.Forms.ToolStripMenuItem();
             this.正负圆ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.bezier曲线ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.b样条曲线ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.BezierCurve = new System.Windows.Forms.ToolStripMenuItem();
+            this.BSampleCurve = new System.Windows.Forms.ToolStripMenuItem();
             this.hermite曲线ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.二维图形变换ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.PingMove = new System.Windows.Forms.ToolStripMenuItem();
+            this.图形旋转ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.二维图形裁剪ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.CohenCut = new System.Windows.Forms.ToolStripMenuItem();
             this.MidCut = new System.Windows.Forms.ToolStripMenuItem();
@@ -52,8 +54,6 @@ namespace CG
             this.投影ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.消隐ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.退出ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.PingMove = new System.Windows.Forms.ToolStripMenuItem();
-            this.图形旋转ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -83,8 +83,8 @@ namespace CG
             this.MidCircle,
             this.BresenhamCircle,
             this.正负圆ToolStripMenuItem,
-            this.bezier曲线ToolStripMenuItem,
-            this.b样条曲线ToolStripMenuItem,
+            this.BezierCurve,
+            this.BSampleCurve,
             this.hermite曲线ToolStripMenuItem});
             this.基本图形生成ToolStripMenuItem.Name = "基本图形生成ToolStripMenuItem";
             this.基本图形生成ToolStripMenuItem.Size = new System.Drawing.Size(111, 24);
@@ -130,17 +130,19 @@ namespace CG
             this.正负圆ToolStripMenuItem.Size = new System.Drawing.Size(194, 26);
             this.正负圆ToolStripMenuItem.Text = "正负圆";
             // 
-            // bezier曲线ToolStripMenuItem
+            // BezierCurve
             // 
-            this.bezier曲线ToolStripMenuItem.Name = "bezier曲线ToolStripMenuItem";
-            this.bezier曲线ToolStripMenuItem.Size = new System.Drawing.Size(194, 26);
-            this.bezier曲线ToolStripMenuItem.Text = "Bezier曲线";
+            this.BezierCurve.Name = "BezierCurve";
+            this.BezierCurve.Size = new System.Drawing.Size(194, 26);
+            this.BezierCurve.Text = "Bezier曲线";
+            this.BezierCurve.Click += new System.EventHandler(this.BezierCurve_Click);
             // 
-            // b样条曲线ToolStripMenuItem
+            // BSampleCurve
             // 
-            this.b样条曲线ToolStripMenuItem.Name = "b样条曲线ToolStripMenuItem";
-            this.b样条曲线ToolStripMenuItem.Size = new System.Drawing.Size(194, 26);
-            this.b样条曲线ToolStripMenuItem.Text = "B样条曲线";
+            this.BSampleCurve.Name = "BSampleCurve";
+            this.BSampleCurve.Size = new System.Drawing.Size(194, 26);
+            this.BSampleCurve.Text = "B样条曲线";
+            this.BSampleCurve.Click += new System.EventHandler(this.BSampleCurve_Click);
             // 
             // hermite曲线ToolStripMenuItem
             // 
@@ -156,6 +158,20 @@ namespace CG
             this.二维图形变换ToolStripMenuItem.Name = "二维图形变换ToolStripMenuItem";
             this.二维图形变换ToolStripMenuItem.Size = new System.Drawing.Size(111, 24);
             this.二维图形变换ToolStripMenuItem.Text = "二维图形变换";
+            // 
+            // PingMove
+            // 
+            this.PingMove.Name = "PingMove";
+            this.PingMove.Size = new System.Drawing.Size(144, 26);
+            this.PingMove.Text = "图形平移";
+            this.PingMove.Click += new System.EventHandler(this.PingMove_Click);
+            // 
+            // 图形旋转ToolStripMenuItem
+            // 
+            this.图形旋转ToolStripMenuItem.Name = "图形旋转ToolStripMenuItem";
+            this.图形旋转ToolStripMenuItem.Size = new System.Drawing.Size(144, 26);
+            this.图形旋转ToolStripMenuItem.Text = "图形旋转";
+            this.图形旋转ToolStripMenuItem.Click += new System.EventHandler(this.图形旋转ToolStripMenuItem_Click);
             // 
             // 二维图形裁剪ToolStripMenuItem
             // 
@@ -230,20 +246,6 @@ namespace CG
             this.退出ToolStripMenuItem.Text = "退出";
             this.退出ToolStripMenuItem.Click += new System.EventHandler(this.退出ToolStripMenuItem_Click);
             // 
-            // PingMove
-            // 
-            this.PingMove.Name = "PingMove";
-            this.PingMove.Size = new System.Drawing.Size(181, 26);
-            this.PingMove.Text = "图形平移";
-            this.PingMove.Click += new System.EventHandler(this.PingMove_Click);
-            // 
-            // 图形旋转ToolStripMenuItem
-            // 
-            this.图形旋转ToolStripMenuItem.Name = "图形旋转ToolStripMenuItem";
-            this.图形旋转ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
-            this.图形旋转ToolStripMenuItem.Text = "图形旋转";
-            this.图形旋转ToolStripMenuItem.Click += new System.EventHandler(this.图形旋转ToolStripMenuItem_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -254,6 +256,7 @@ namespace CG
             this.Name = "Form1";
             this.Text = "Form1";
             this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseClick);
+            this.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseDoubleClick);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseMove);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
@@ -272,8 +275,8 @@ namespace CG
         private System.Windows.Forms.ToolStripMenuItem MidCircle;
         private System.Windows.Forms.ToolStripMenuItem BresenhamCircle;
         private System.Windows.Forms.ToolStripMenuItem 正负圆ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem bezier曲线ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem b样条曲线ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem BezierCurve;
+        private System.Windows.Forms.ToolStripMenuItem BSampleCurve;
         private System.Windows.Forms.ToolStripMenuItem hermite曲线ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 二维图形变换ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 二维图形裁剪ToolStripMenuItem;
