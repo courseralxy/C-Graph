@@ -18,8 +18,10 @@ namespace CG
         public Form1()
         {
             InitializeComponent();
-            bm = new Bitmap(900,600);
+            bm = new Bitmap(900, 600);
             Graphics G = Graphics.FromImage(bm);
+            G.Clear(BackColor1);
+            G = CreateGraphics();
             G.Clear(BackColor1);
             //bm = new Bitmap("default.bmp");
         }
@@ -29,7 +31,7 @@ namespace CG
             public int y0;
             public int x1;
             public int y1;
-            public line(int _x0, int _y0,int _x1,int _y1)//有参构造函数
+            public line(int _x0, int _y0, int _x1, int _y1)//有参构造函数
             {
                 this.x0 = _x0;
                 this.x1 = _x1;
@@ -47,13 +49,14 @@ namespace CG
         public int FirstY;//DDALine
         public int OldX;//DDALine
         public int OldY;//DDALine
+        public Point[] lineGroup = new Point[2];
         public List<line> Line = new List<line>();//没有用到
         Point[] group = new Point[100];//图形填充时用以记录顶点
         Bitmap bm;//位图，画布，用以储存正式图像和保存文件
         //二维裁剪窗口
         public int XL, XR, YU, YD;//裁剪算法生成框图
         Point[] pointsgroup = new Point[4];
-       
+        Matrix matrix;
         private void initializeLine(int mid)//初始化
         {
             MenuID = mid;
@@ -69,12 +72,12 @@ namespace CG
 
         private void DDALine_Click(object sender, EventArgs e)//选择DDA直线功能
         {
-          
+
             initializeLine(1);
             //MenuID = 1;
             //PressNum = 0;
-            Graphics g = CreateGraphics();//创建一张画纸
-            g.Clear(BackColor1);//设置底色
+            //Graphics g = CreateGraphics();//创建一张画纸
+            //g.Clear(BackColor1);//设置底色
 
         }
 
@@ -91,15 +94,25 @@ namespace CG
                     FirstY = e.Y;
                     OldX = e.X;
                     OldY = e.Y;
+                    lineGroup[0].X = e.X;
+                    lineGroup[0].Y = e.Y;
+                    PointNum++;
                 }
                 else//终点
                 {
-                    Line.Add(new CG.Form1.line(FirstX, FirstY, e.X, e.Y));//记录所有直线的两端点，后续用与直线的删除、拖动、裁剪。并在鼠标移动画线时修正原先直线被擦除的bug
+                    //Line.Add(new CG.Form1.line(FirstX, FirstY, e.X, e.Y));//记录所有直线的两端点，后续用与直线的删除、拖动、裁剪。并在鼠标移动画线时修正原先直线被擦除的bug
                     if (MenuID == 1)
-                        DDALine1(FirstX, FirstY, e.X, e.Y);
-                    //g.DrawLine(pen, FirstX, FirstY, e.X, e.Y);
-                    else if (MenuID == 2)
-                        MidLine1(FirstX, FirstY, e.X, e.Y);
+                    {
+                        //DDALine1(G, FirstX, FirstY, e.X, e.Y);
+                        MenuID = 201;
+                    }                    //g.DrawLine(pen, FirstX, FirstY, e.X, e.Y);
+                    else if (MenuID == 2) {
+                        //MidLine1(G, FirstX, FirstY, e.X, e.Y);
+                        MenuID = 202;
+                    }
+                    lineGroup[1].X = e.X;
+                    lineGroup[1].Y = e.Y;
+                    PointNum++;
                 }
                 PressNum = (PressNum + 1) % 2;//画线完毕则清零
             }
@@ -123,10 +136,10 @@ namespace CG
                 }
                 PressNum = (PressNum + 1) % 2;
             }
-            
-            else if(MenuID == 1111)//画窗口
+
+            else if (MenuID == 1111)//画窗口
             {
-                if(PressNum == 0)
+                if (PressNum == 0)
                 {
                     FirstX = e.X;
                     FirstY = e.Y;
@@ -134,7 +147,7 @@ namespace CG
                 }
                 else
                 {
-                    if ((FirstX == e.X) && (FirstY == e.Y)){
+                    if ((FirstX == e.X) && (FirstY == e.Y)) {
 
                     }
                     else
@@ -143,13 +156,13 @@ namespace CG
                         XR = e.X;
                         YD = FirstY;
                         YU = e.Y;
-                        if(XL > XR)
+                        if (XL > XR)
                         {
                             int tmp = XL;
                             XL = XR;
                             XR = tmp;
                         }
-                        if(YD > YU)
+                        if (YD > YU)
                         {
                             int tmp = YD;
                             YD = YU;
@@ -162,57 +175,80 @@ namespace CG
                 //PressNum = (PressNum + 1) % 2;
             }
 
-            else if(MenuID == 11)
+            else if (MenuID == 11)
             {
-                if(PressNum == 0)
-                {
-                    FirstX = e.X;
-                    FirstY = e.Y;
-
-                }
-                else
-                {
-                    for(int i = 0; i < 4; i++)
-                    {
-                        pointsgroup[i].X += e.X - FirstX;
-                        pointsgroup[i].Y += e.Y - FirstY;
-                    }
-                    g.DrawPolygon(Pens.Blue, pointsgroup);
-                }
-                PressNum = (PressNum + 1) % 2;
+                FirstX = e.X;
+                FirstY = e.Y;
+                pointsgroup[0].X = e.X - 50;
+                pointsgroup[0].Y = e.Y - 50;
+                pointsgroup[1].X = e.X + 50;
+                pointsgroup[1].Y = e.Y - 50;
+                pointsgroup[2].X = e.X + 50;
+                pointsgroup[2].Y = e.Y + 50;
+                pointsgroup[3].X = e.X - 50;
+                pointsgroup[3].Y = e.Y + 50;
+                G.DrawImage(bm, new Point(0, 0));
+                G.DrawPolygon(Pens.Blue, pointsgroup);
+                MenuID = 211;
             }
-            else if(MenuID == 12)//图形旋转功能
+            else if (MenuID == 77)//缩放
             {
-                if (PressNum == 0)
-                {
-                    FirstX = e.X;
-                    FirstY = e.Y;
-                }
-                else
-                {
-                    double a;
-                    if (e.X == FirstX && e.Y == FirstY)//两点重合，不旋转
-                        return;
-                    if (e.X == FirstX && e.Y > FirstY)//分母为零
-                        a = Pi / 2.0;
-                    else if (e.X == FirstX && e.Y < FirstY)
-                    {
-                        a = Pi / 2.0 * 3.0;
-                    }
-                    else
-                        a = Math.Atan((double)(e.Y - FirstY) / (double)(e.X - FirstX));
-                    a = a / Pi * 180.0;//转化为角度
-                    int x0 = 150, y0 = 150;
-                    Matrix DrawMatrix = new Matrix();//利用矩阵计算
-                    DrawMatrix.Translate(-x0, -y0);
-                    DrawMatrix.Rotate((float)a, MatrixOrder.Append);
-                    DrawMatrix.Translate(x0, y0, MatrixOrder.Append);
+                FirstX = e.X;
+                FirstY = e.Y;
+                pointsgroup[0].X = e.X - 50;
+                pointsgroup[0].Y = e.Y - 50;
+                pointsgroup[1].X = e.X + 50;
+                pointsgroup[1].Y = e.Y - 50;
+                pointsgroup[2].X = e.X + 50;
+                pointsgroup[2].Y = e.Y + 50;
+                pointsgroup[3].X = e.X - 50;
+                pointsgroup[3].Y = e.Y + 50;
+                G.DrawImage(bm, new Point(0, 0));
+                G.DrawPolygon(Pens.Blue, pointsgroup);
+                MenuID = 277;
+            }
 
-                    //Graphics g = CreateGraphics();
-                    g.Transform = DrawMatrix;
-                    g.DrawPolygon(Pens.Blue, pointsgroup);
-                }
-                PressNum = (PressNum + 1) % 2;
+            else if (MenuID == 12)//图形旋转功能
+            {
+                FirstX = e.X;
+                FirstY = e.Y;
+                pointsgroup[0].X = e.X - 50;
+                pointsgroup[0].Y = e.Y - 50;
+                pointsgroup[1].X = e.X + 50;
+                pointsgroup[1].Y = e.Y - 50;
+                pointsgroup[2].X = e.X + 50;
+                pointsgroup[2].Y = e.Y + 50;
+                pointsgroup[3].X = e.X - 50;
+                pointsgroup[3].Y = e.Y + 50;
+                G.DrawImage(bm, new Point(0, 0));
+                G.DrawPolygon(Pens.Blue, pointsgroup);
+                MenuID = 212;
+                /*  }
+                  else
+                  {
+                      double a;
+                      if (e.X == FirstX && e.Y == FirstY)//两点重合，不旋转
+                          return;
+                      if (e.X == FirstX && e.Y > FirstY)//分母为零
+                          a = Pi / 2.0;
+                      else if (e.X == FirstX && e.Y < FirstY)
+                      {
+                          a = Pi / 2.0 * 3.0;
+                      }
+                      else
+                          a = Math.Atan((double)(e.Y - FirstY) / (double)(e.X - FirstX));
+                      a = a / Pi * 180.0;//转化为角度
+                      int x0 = 150, y0 = 150;
+                      Matrix DrawMatrix = new Matrix();//利用矩阵计算
+                      DrawMatrix.Translate(-x0, -y0);
+                      DrawMatrix.Rotate((float)a, MatrixOrder.Append);
+                      DrawMatrix.Translate(x0, y0, MatrixOrder.Append);
+
+                      //Graphics g = CreateGraphics();
+                      g.Transform = DrawMatrix;
+                      g.DrawPolygon(Pens.Blue, pointsgroup);
+                  }
+                  */
             }
             else if (MenuID == 24)
             {
@@ -252,7 +288,7 @@ namespace CG
                 }
                 else
                 {
- 
+
                     if (PressNum == 2)//记录起点
                     {//起点
                         OldX = e.X;
@@ -271,9 +307,9 @@ namespace CG
                         group[PointNum].X = e.X;
                         group[PointNum].Y = e.Y;
                         if (PressNum > 2)//画出这些点
-                        { 
+                        {
                             g.DrawLine(Pens.Red, group[PointNum - 1], group[PointNum]);
-                            G.DrawImage(bm,new Point(0,0));
+                            G.DrawImage(bm, new Point(0, 0));
                         }
                         PointNum++;
                         PressNum++;
@@ -283,47 +319,14 @@ namespace CG
                         g.DrawLine(Pens.Red, group[PointNum - 1], group[0]);
                         //if (MenuID == 31) ScanLineFill1();//扫描线填充
                         //else if (MenuID == 24)
-                            WindowCut1();//多边形裁剪
+                        WindowCut1();//多边形裁剪
                         PointNum = 0;
                         PressNum = 2;//清零
                     }
                 }
             }
-            else if (MenuID == 31)//扫描线填充算法和多边形裁剪算法
-            {
-               if (PressNum == 0)//记录起点
-               {//起点
-                   OldX = e.X;
-                   OldY = e.Y;
-               }
-               // OldX = FirstX;
-               // OldY = FirstY;
-               // FirstX = e.X;
-               // FirstY = e.Y;
-                if (e.Button == MouseButtons.Left) //左键定点
-                {
-                    //group[PressNum].X = e.X;
-                    //group[PressNum].Y = e.Y;
-                    group[PointNum].X = e.X;
-                    group[PointNum].Y = e.Y;
-                    if (PressNum > 0)//画出这些点
-                    {
-                        g.DrawLine(Pens.Red, group[PointNum - 1], group[PointNum]);
-                    }
-                    PointNum++;
-                    PressNum++;
-                }
-                else if (e.Button == MouseButtons.Right)//右键结束
-                {
-                    g.DrawLine(Pens.Red, group[PointNum - 1], group[0]);
-                    if (MenuID == 31) ScanLineFill1();//扫描线填充
-                    else if (MenuID == 24) WindowCut1();//多边形裁剪
-                    PointNum = 0;
-                    PressNum = 0;//清零
-                }
 
-            }
-            else if(MenuID == 21 || MenuID == 22||MenuID == 23)//三种裁剪算法通用
+            else if (MenuID == 21 || MenuID == 22 || MenuID == 23)//三种裁剪算法通用
             {
                 if (PressNum == 0)
                 {
@@ -331,7 +334,7 @@ namespace CG
                     FirstY = e.Y;
                     PressNum++;
                 }
-                else if(PressNum == 1)
+                else if (PressNum == 1)
                 {
                     if ((FirstX == e.X) && (FirstY == e.Y))
                     {
@@ -358,9 +361,9 @@ namespace CG
                         g.DrawRectangle(Pens.Blue, XL, YD, XR - XL, YU - YD);
                         PressNum++;
                     }
-                    
+
                 }
-                
+
                 else if (PressNum == 2)
                 {
                     FirstX = e.X;
@@ -385,55 +388,243 @@ namespace CG
                     group[PointNum].X = e.X;
                     group[PointNum].Y = e.Y;
                     PointNum++;
-                    g.DrawLine(Pens.Black, e.X - 5, e.Y, e.X + 5, e.Y);//Bezier曲线选点并做十字标志
-                    g.DrawLine(Pens.Black, e.X, e.Y - 5, e.X, e.Y + 5);
-
+                    G.DrawLine(Pens.Black, e.X - 5, e.Y, e.X + 5, e.Y);//Bezier曲线选点并做十字标志
+                    G.DrawLine(Pens.Black, e.X, e.Y - 5, e.X, e.Y + 5);
                     PressNum = 1;
                 }
                 if ((e.Button == MouseButtons.Right) && (PointNum > 3))
                 {
                     if (MenuID == 7)
                     {
-                        Bezier1(1);//绘制曲线
+                        Bezier1(G, 1);//绘制曲线
                         MenuID = 107;//讲后续操作改为修改控制点位置
                     }
                     else
                     {
-                        BSample1(1);//绘制曲线
+                        BSample1(G, 1);//绘制曲线
                         MenuID = 108;
                     }
                     PressNum = 0;
                 }
             }
-            else if(MenuID == 107 || MenuID == 108)
+            else if (MenuID == 31)//扫描线填充算法
             {
-                if((e.Button == MouseButtons.Left)&&PressNum == 0)
+                if (PressNum == 0)//记录起点
+                {//起点
+                    OldX = e.X;
+                    OldY = e.Y;
+                }
+                if (e.Button == MouseButtons.Left) //左键定点
                 {
-                    for(int i = 0;i<PointNum;i++)
+                    group[PointNum].X = e.X;
+                    group[PointNum].Y = e.Y;
+                    if (PressNum > 0)//画出这些点
                     {
-                        if((e.X>=(group[i].X - 5))&&(e.X<=group[i].X+ 5)&&(e.Y>=group[i].Y-5)&&(e.Y<=group[i].Y+5))
+                        G.DrawLine(Pens.Red, group[PointNum - 1], group[PointNum]);
+                    }
+                    PointNum++;
+                    PressNum++;
+                }
+                else if (e.Button == MouseButtons.Right)//右键结束
+                {
+                    G.DrawLine(Pens.Red, group[PointNum - 1], group[0]);
+                    ScanLineFill1(G);//扫描线填充
+                    MenuID = 231;
+                    PressNum = 0;//清零
+                }
+
+            }
+            else if (MenuID == 99)//多边形，类似扫描线填充
+            {
+                if (PressNum == 0)//记录起点
+                {//起点
+                    OldX = e.X;
+                    OldY = e.Y;
+                }
+                if (e.Button == MouseButtons.Left) //左键定点
+                {
+                    group[PointNum].X = e.X;
+                    group[PointNum].Y = e.Y;
+                    if (PressNum > 0)//画出这些点
+                    {
+                        DDALine1(G, group[PointNum - 1].X, group[PointNum - 1].Y, group[PointNum].X, group[PointNum].Y);
+                    }
+                    PointNum++;
+                    PressNum++;
+                }
+                else if (e.Button == MouseButtons.Right)//右键结束
+                {
+                    G.DrawLine(Pens.Red, group[PointNum - 1], group[0]);
+                    //ScanLineFill1(G);//扫描线填充
+                    MenuID = 299;
+                    PressNum = 0;//清零
+                }
+
+            }
+
+            /*
+             *  else if (MenuID == 31)//扫描线填充算法
+            {
+                if (PressNum == 0)//记录起点
+                {//起点
+                    OldX = e.X;
+                    OldY = e.Y;
+                }
+                if (e.Button == MouseButtons.Left) //左键定点
+                {
+                    //group[PressNum].X = e.X;
+                    //group[PressNum].Y = e.Y;
+                    group[PointNum].X = e.X;
+                    group[PointNum].Y = e.Y;
+                    if (PressNum > 0)//画出这些点
+                    {
+                        g.DrawLine(Pens.Red, group[PointNum - 1], group[PointNum]);
+                    }
+                    PointNum++;
+                    PressNum++;
+                }
+                else if (e.Button == MouseButtons.Right)//右键结束
+                {
+                    g.DrawLine(Pens.Red, group[PointNum - 1], group[0]);
+                    ScanLineFill1();//扫描线填充
+                    PointNum = 0;
+                    PressNum = 0;//清零
+                }
+
+            }
+             * */
+            else if (MenuID == 107 || MenuID == 108)
+            {
+                if ((e.Button == MouseButtons.Left) && PressNum == 0)
+                {
+                    for (int i = 0; i < PointNum; i++)
+                    {
+                        if ((e.X >= (group[i].X - 5)) && (e.X <= group[i].X + 5) && (e.Y >= group[i].Y - 5) && (e.Y <= group[i].Y + 5))
                         {
                             SaveNumber = i;
                             PressNum = 1;
                         }
                     }
                 }
-                else if((e.Button == MouseButtons.Right)&&(PointNum > 3))
+                else if ((e.Button == MouseButtons.Right) && (PointNum > 3))
+                {
+                    PressNum = 0;
+                }
+            }
+            else if (MenuID == 211)
+            {
+                if ((e.Button == MouseButtons.Left) && PressNum == 0)
+                {
+                    if ((e.X >= pointsgroup[0].X) && (e.X <= pointsgroup[1].X) && (e.Y >= pointsgroup[0].Y) && (e.Y <= pointsgroup[2].Y))
+                    {
+                        SaveNumber = 1;
+                        PressNum = 1;
+                    }
+
+                }
+                else if ((e.Button == MouseButtons.Right) && (PressNum > 0))
+                {
+                    PressNum = 0;
+                }
+            }
+            else if (MenuID == 277)
+            {
+                if ((e.Button == MouseButtons.Left) && PressNum == 0)
+                {
+                    if ((e.X >= pointsgroup[0].X) && (e.X <= pointsgroup[1].X) && (e.Y >= pointsgroup[0].Y) && (e.Y <= pointsgroup[2].Y))
+                    {
+                        SaveNumber = 1;
+                        PressNum = 1;
+                    }
+
+                }
+                else if ((e.Button == MouseButtons.Right) && (PressNum > 0))
+                {
+                    PressNum = 0;
+                }
+            }
+            else if (MenuID == 212)
+            {
+                if ((e.Button == MouseButtons.Left) && PressNum == 0)
+                {
+                    if ((e.X >= pointsgroup[0].X) && (e.X <= pointsgroup[1].X) && (e.Y >= pointsgroup[0].Y) && (e.Y <= pointsgroup[2].Y))
+                    {
+                        SaveNumber = 1;
+                        PressNum = 1;
+                    }
+
+                }
+                else if ((e.Button == MouseButtons.Right) && (PressNum > 0))
+                {
+                    PressNum = 0;
+                }
+            }
+            
+            else if (MenuID == 231)
+            {
+                if ((e.Button == MouseButtons.Left) && PressNum == 0)
+                {
+                    for (int i = 0; i < PointNum; i++)
+                    {
+                        if ((e.X >= (group[i].X - 5)) && (e.X <= group[i].X + 5) && (e.Y >= group[i].Y - 5) && (e.Y <= group[i].Y + 5))
+                        {
+                            SaveNumber = i;
+                            PressNum = 1;
+                        }
+                    }
+                }
+                else if ((e.Button == MouseButtons.Right) && (PointNum > 3))
+                {
+                    PressNum = 0;
+                }
+            }
+            else if (MenuID == 299)
+            {
+                if ((e.Button == MouseButtons.Left) && PressNum == 0)
+                {
+                    for (int i = 0; i < PointNum; i++)
+                    {
+                        if ((e.X >= (group[i].X - 5)) && (e.X <= group[i].X + 5) && (e.Y >= group[i].Y - 5) && (e.Y <= group[i].Y + 5))
+                        {
+                            SaveNumber = i;
+                            PressNum = 1;
+                        }
+                    }
+                }
+                else if ((e.Button == MouseButtons.Right) && (PointNum > 3))
+                {
+                    PressNum = 0;
+                }
+            }
+            else if (MenuID == 201 || MenuID == 202)
+            {
+                if ((e.Button == MouseButtons.Left) && PressNum == 0)
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        if ((e.X >= (lineGroup[i].X - 5)) && (e.X <= lineGroup[i].X + 5) && (e.Y >= lineGroup[i].Y - 5) && (e.Y <= lineGroup[i].Y + 5))
+                        {
+                            SaveNumber = i;
+                            PressNum = 1;
+                        }
+                    }
+                }
+                else if ((e.Button == MouseButtons.Right) && PointNum > 0)
                 {
                     PressNum = 0;
                 }
             }
         }
-        private void DDALine1(int x0, int y0, int x1, int y1)
+        private void DDALine1(Graphics gp, int x0, int y0, int x1, int y1)
         {//程序仍需实现画点
-            
+
             int flag;
             float k;
-            Graphics g = Graphics.FromImage(bm);//创建画布
+            Graphics g = gp;//创建画布
             if (x0 == x1 && y0 == y1)
             {
-                g.DrawRectangle(Pens.Red, x0,y0, 1, 1);
-               
+                g.DrawRectangle(Pens.Red, x0, y0, 1, 1);
+
                 return;//端点重叠啥都没画
             }
             if (x0 == x1)//斜率为正无穷
@@ -448,7 +639,7 @@ namespace CG
                 {
                     g.DrawRectangle(Pens.Red, x0, i, 1, 1);
                 }
-              
+
                 return;
             }
             if (y0 == y1)//斜率为0，水平
@@ -464,7 +655,7 @@ namespace CG
                 {
                     g.DrawRectangle(Pens.Red, i, y0, 1, 1);
                 }
-              
+
                 return;
 
             }
@@ -525,57 +716,57 @@ namespace CG
                         break;
                 }
             }
-            Graphics output = CreateGraphics();
-            output.DrawImage(bm, new Point(0, 0));
+            //Graphics output = CreateGraphics();
+            //output.DrawImage(bm, new Point(0, 0));
         }
 
-        
-        private void MidLine1(int x0, int y0, int x1, int y1)
+
+        private void MidLine1(Graphics gp, int x0, int y0, int x1, int y1)
         {
-            Graphics g = Graphics.FromImage(bm);
+            Graphics g = gp;
             Graphics G = CreateGraphics();//创建画布
 
             int flag;
-           
+
             if (x0 == x1 && y0 == y1)
             {
                 g.DrawRectangle(Pens.Red, x0, y0, 1, 1);
-               
+
                 return;//画点
             }
-            else if(x0 == x1)//竖直线
+            else if (x0 == x1)//竖直线
             {
-                if(y0 > y1)
+                if (y0 > y1)
                 {
                     int tmp = y0;
                     y0 = y1;
                     y1 = y0;
                 }
-                for(int i = y0;i <= y1; i++)
+                for (int i = y0; i <= y1; i++)
                 {
                     g.DrawRectangle(Pens.Red, x1, i, 1, 1);//画点
                 }
-               
+
                 G.DrawImage(bm, new Point(0, 0));
                 return;
             }
-            else if(y0 == y1)//水平线
+            else if (y0 == y1)//水平线
             {
-                if(x0 > x1)
+                if (x0 > x1)
                 {
                     int tmp = x0;
                     x0 = x1;
                     x1 = tmp;
                 }
-                for(int i = x0;i <= x1; i++)
+                for (int i = x0; i <= x1; i++)
                 {
                     g.DrawRectangle(Pens.Red, i, y1, 1, 1);//画点
                 }
-                
+
                 G.DrawImage(bm, new Point(0, 0));
                 return;
             }
-            if(x0 > x1)//将左边的作为起点
+            if (x0 > x1)//将左边的作为起点
             {
                 int tmp = x0;
                 x0 = x1;
@@ -589,13 +780,13 @@ namespace CG
             int deltaX = x1 - x0;
             int deltaY = y1 - y0;
             if ((deltaX > deltaY) && deltaY > 0) flag = 1;
-            else if((deltaX > (-deltaY))&&((-deltaY) > 0))
+            else if ((deltaX > (-deltaY)) && ((-deltaY) > 0))
             {
                 flag = 2;
                 y0 = -y0;
                 y1 = -y1;
             }
-            else if(deltaY > deltaX)
+            else if (deltaY > deltaX)
             {
                 flag = 3;
                 int tmp = x0;
@@ -606,7 +797,7 @@ namespace CG
                 x1 = y1;
                 y1 = tmp;
             }
-            else if((-deltaY) > deltaX)
+            else if ((-deltaY) > deltaX)
             {
                 flag = 4;
                 int tmp = x0;
@@ -622,7 +813,7 @@ namespace CG
             deltaY = y1 - y0;
             while (x < x1 + 1)
             {
-                switch(flag)
+                switch (flag)
                 {
                     case 1:
                         g.DrawRectangle(Pens.Red, x, y, 1, 1);
@@ -648,7 +839,7 @@ namespace CG
                     d = d - 2 * (deltaY - deltaX);
                 }
             }
-           
+
             G.DrawImage(bm, new Point(0, 0));
         }
         private void BresenhamCircle1(int x0, int y0, int x1, int y1)
@@ -658,7 +849,7 @@ namespace CG
             int deltaX = x1 - x0, deltaY = y1 - y0;
             int r = (int)(Math.Sqrt(deltaX * deltaX + deltaY * deltaY) + 0.5);
             int x = 0, y = r, d = 3 - 2 * r;
-            while(x < y || x == y)
+            while (x < y || x == y)
             {
                 g.DrawRectangle(Pens.Blue, x + x0, y + y0, 1, 1);
                 g.DrawRectangle(Pens.Red, -x + x0, y + y0, 1, 1);
@@ -702,19 +893,19 @@ namespace CG
                 k = (float)(x1 - x2) / (float)(y1 - y2);
             }
         }
-        private void ScanLineFill1()
+        private void ScanLineFill1(Graphics gp)
         {
             int edgesize = 0;
             int yu = 0, yd = 600;//活化边扫描范围
             EdgeInfo[] edgelist = new EdgeInfo[100];//存边
-            group[PressNum] = group[0];
-            for(int i = 0; i < PressNum;i++)
+            group[PointNum] = group[0];
+            for (int i = 0; i < PointNum; i++)
             {
                 if (group[i].Y > yu) yu = group[i].Y;//最高点
                 if (group[i].Y < yd) yd = group[i].Y;//最低点
-                if(group[i].Y!=group[i+1].Y)//只处理非水平边
+                if (group[i].Y != group[i + 1].Y)//只处理非水平边
                 {
-                    if(group[i].Y > group[i+1].Y)//下端点在前，上端点在后
+                    if (group[i].Y > group[i + 1].Y)//下端点在前，上端点在后
                     {
                         edgelist[edgesize++] = new EdgeInfo(group[i + 1].X, group[i + 1].Y, group[i].X, group[i].Y);
                     }
@@ -724,7 +915,7 @@ namespace CG
                     }
                 }
             }
-            Graphics g = Graphics.FromImage(bm);
+            Graphics g = gp;
             for (int y = yd; y < yu; y++)//AEL表操作
             {
                 var sorted =
@@ -755,8 +946,8 @@ namespace CG
                     }
                 }
             }
-            Graphics G = CreateGraphics();//创建画布
-            G.DrawImage(bm, new Point(0, 0));
+            // Graphics G = CreateGraphics();//创建画布
+            //G.DrawImage(bm, new Point(0, 0));
         }
         private int encode(int x, int y)
         {
@@ -782,36 +973,36 @@ namespace CG
             Graphics g = Graphics.FromImage(bm);
 
             g.DrawLine(Pens.Red, x1, y1, x2, y2);
-            
+
             code1 = encode(x1, y1);
             code2 = encode(x2, y2);
-            while(code1 != 0 || code2 !=0)
+            while (code1 != 0 || code2 != 0)
             {
                 if ((code1 & code2) != 0)
                     return;
                 code = code1;
                 if (code1 == 0) code = code2;
-                if((1&code)!=0)
+                if ((1 & code) != 0)
                 {
                     x = XL;
                     y = y1 + (y2 - y1) * (x - x1) / (x2 - x1);
                 }
-                else if((2&code)!=0)
+                else if ((2 & code) != 0)
                 {
                     x = XR;
                     y = y1 + (y2 - y1) * (x - x1) / (x2 - x1);
                 }
-                else if((4&code)!=0)
+                else if ((4 & code) != 0)
                 {
                     y = YD;
                     x = x1 + (x2 - x1) * (y - y1) / (y2 - y1);
                 }
-                else if((8&code)!=0)
+                else if ((8 & code) != 0)
                 {
                     y = YU;
                     x = x1 + (x2 - x1) * (y - y1) / (y2 - y1);
                 }
-                if(code == code1)
+                if (code == code1)
                 {
                     x1 = x;
                     y1 = y;
@@ -829,7 +1020,7 @@ namespace CG
             Graphics G = CreateGraphics();//创建画布
             G.DrawImage(bm, new Point(0, 0));
 
-        }      
+        }
 
         private bool LineIsOutOfWindow(int x1, int y1, int x2, int y2)
         {
@@ -861,26 +1052,26 @@ namespace CG
         {
             int x = 0, y = 0;
             Point p = new Point(0, 0);
-            if(!PointIsOutOfWindow(x1, y1))
+            if (!PointIsOutOfWindow(x1, y1))
             {
                 p.X = x1;
                 p.Y = y1;
                 return p;
             }
-            while(!(Math.Abs(x1 - x2) <= 1 && Math.Abs(y1-y2)<=1))
+            while (!(Math.Abs(x1 - x2) <= 1 && Math.Abs(y1 - y2) <= 1))
             {
                 x = (x1 + x2) / 2;
                 y = (y1 + y2) / 2;
-                if(LineIsOutOfWindow(x1, y1, x, y))
+                if (LineIsOutOfWindow(x1, y1, x, y))
                 {
                     x1 = x; y1 = y;
                 }
                 else
                 {
-                    x2 = x;y2 = y;
+                    x2 = x; y2 = y;
                 }
             }
-            if(PointIsOutOfWindow(x1, y1))
+            if (PointIsOutOfWindow(x1, y1))
             {
                 p.X = x2;
                 p.Y = y2;
@@ -896,7 +1087,7 @@ namespace CG
         {
             Graphics g = Graphics.FromImage(bm);
             g.DrawLine(Pens.Red, x1, y1, x2, y2);
-            
+
             Point p1, p2;
             if (LineIsOutOfWindow(x1, y1, x2, y2))
                 return;
@@ -912,12 +1103,13 @@ namespace CG
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
             Graphics g = CreateGraphics();//创建画纸
-            g.DrawImage(bm, new Point(0, 0));
-            Pen BackgroundPen = new Pen(BackColor1,1);
+
+            Pen BackgroundPen = new Pen(BackColor1, 1);
             Pen DrawPen = new Pen(ForeColor1, 1);
-            if((MenuID == 1 || MenuID == 2)&& PressNum == 1)
+            if ((MenuID == 1 || MenuID == 2) && PressNum == 1)
             {
-                if(!(e.X == OldX && e.Y == OldY))
+                g.DrawImage(bm, new Point(0, 0));
+                if (!(e.X == OldX && e.Y == OldY))
                 {
                     g.DrawLine(BackgroundPen, FirstX, FirstY, OldX, OldY);//擦掉原来的。因此解决办法是，将确定的直线的画布记录下来，然后每次画新的move直线都是在确定直线画布的拷贝上画，就不需要擦除了
                     g.DrawLine(DrawPen, FirstX, FirstY, e.X, e.Y);
@@ -925,28 +1117,31 @@ namespace CG
                     OldY = e.Y;
                 }
             }
-            else if((MenuID == 5) && (PressNum == 1))
+            else if ((MenuID == 5) && (PressNum == 1))
             {
-                if(!((e.X == OldX)&&(e.Y == OldY)))
+                g.DrawImage(bm, new Point(0, 0));
+                if (!((e.X == OldX) && (e.Y == OldY)))
                 {
                     int deltaX = FirstX - OldX, deltaY = FirstY - OldY;
                     double r = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);//半径
                     int r1 = (int)(r + 0.5);//取整
-                    g.DrawEllipse(BackgroundPen, (FirstX+OldX)/2-r1/2 , (FirstY+OldY)/2-r1/2 , r1, r1);//擦除旧圆
+                    g.DrawEllipse(BackgroundPen, (FirstX + OldX) / 2 - r1 / 2, (FirstY + OldY) / 2 - r1 / 2, r1, r1);//擦除旧圆
                     deltaX = FirstX - e.X;
                     deltaY = FirstY - e.Y;
                     r = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
                     r1 = (int)(r + 0.5);//取整
-                    
-                    g.DrawEllipse(DrawPen, (FirstX+e.X)/2-r1/2, (FirstY+e.Y)/2-r1/2 , r1, r1);//画新圆
+
+                    g.DrawEllipse(DrawPen, (FirstX + e.X) / 2 - r1 / 2, (FirstY + e.Y) / 2 - r1 / 2, r1, r1);//画新圆
                     OldX = e.X;
                     OldY = e.Y;
                 }
             }
-            else if ((MenuID == 1111||MenuID==21 || MenuID == 22 || MenuID == 23||MenuID==24) &&(PressNum == 1))
+            else if ((MenuID == 1111 || MenuID == 21 || MenuID == 22 || MenuID == 23 || MenuID == 24) && (PressNum == 1))
             {
+
                 if (!((e.X == OldX) && (e.Y == OldY)))
                 {
+                    g.DrawImage(bm, new Point(0, 0));
                     //g.DrawRectangle(Pens.Blue,FirstX, FirstY, e.X - FirstX, e.Y - FirstY);
                     g.DrawLine(Pens.White, FirstX, FirstY, OldX, FirstY);
                     g.DrawLine(Pens.White, FirstX, FirstY, FirstX, OldY);
@@ -963,46 +1158,189 @@ namespace CG
             }
             else if (MenuID == 24 && PressNum > 2)
             {
+                g.DrawImage(bm, new Point(0, 0));
                 if (!(e.X == OldX && e.Y == OldY))
                 {
                     //g.DrawLine(BackgroundPen, group[PressNum - 1].X, group[PressNum - 1].Y, OldX, OldY);
-                    g.DrawLine(DrawPen, group[PressNum-2 - 1].X, group[PressNum-2 - 1].Y, e.X, e.Y);
+                    g.DrawLine(DrawPen, group[PressNum - 2 - 1].X, group[PressNum - 2 - 1].Y, e.X, e.Y);
                     OldX = e.X;
                     OldY = e.Y;
                 }
             }
-            else if((MenuID == 31)&& PressNum > 0)
+            else if ((MenuID == 31) && PressNum > 0)
             {
+                g.DrawImage(bm, new Point(0, 0));
+                for (int i = 0; i < PointNum - 1; i++)
                 {
-                    if(!(e.X == OldX && e.Y == OldY))
-                    {
-                        g.DrawLine(BackgroundPen, group[PressNum - 1].X, group[PressNum - 1].Y, OldX, OldY);
-                        g.DrawLine(DrawPen, group[PressNum - 1].X, group[PressNum- 1].Y, e.X, e.Y);
-                        OldX = e.X;
-                        OldY = e.Y;
-                    }
+                    g.DrawLine(Pens.Red, group[i], group[i + 1]);
                 }
+                if (!(e.X == OldX && e.Y == OldY))
+                {
+                    g.DrawLine(DrawPen, group[PressNum - 1].X, group[PressNum - 1].Y, e.X, e.Y);
+                    OldX = e.X;
+                    OldY = e.Y;
+                }
+            }
+            else if ((MenuID == 99) && PressNum > 0)
+            {
+                g.DrawImage(bm, new Point(0, 0));
+                for (int i = 0; i < PointNum - 1; i++)
+                {
+                    g.DrawLine(Pens.Red, group[i], group[i + 1]);
+                }
+                if (!(e.X == OldX && e.Y == OldY))
+                {
+                    g.DrawLine(DrawPen, group[PressNum - 1].X, group[PressNum - 1].Y, e.X, e.Y);
+                    OldX = e.X;
+                    OldY = e.Y;
+                }
+            }
+            else if ((MenuID == 7) || (MenuID == 8) && (PressNum > 0))
+            {
+                for (int i = 0; i < PointNum; i++)
+                {
+                    g.DrawLine(Pens.Black, group[i].X - 5, group[i].Y, group[i].X + 5, group[i].Y);
+                    g.DrawLine(Pens.Black, group[i].X, group[i].Y - 5, group[i].X, group[i].Y + 5);
+                }
+            }
+            else if ((MenuID == 211) && (PressNum > 0))
+            {
+                int ox, oy;
+                ox = (pointsgroup[0].X + pointsgroup[1].X) / 2;
+                oy = (pointsgroup[0].Y + pointsgroup[2].Y) / 2;
+                if (!((ox == e.X) && (oy == e.Y)))
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        pointsgroup[i].X += e.X - ox;
+                        pointsgroup[i].Y += e.Y - oy;
+                    }
+                    g.DrawImage(bm, new Point(0, 0));
+                    g.DrawPolygon(Pens.Blue, pointsgroup);
+                }
+            }
+            else if ((MenuID == 277) && (PressNum > 0))
+            {
+                int ox, oy;
+                ox = (pointsgroup[0].X + pointsgroup[1].X) / 2;
+                oy = (pointsgroup[0].Y + pointsgroup[2].Y) / 2;
+                if (!((ox == e.X) && (oy == e.Y)))
+                {
+                    int ax = System.Math.Abs(e.X - ox);
+                    int ay = System.Math.Abs(e.Y - oy);
+                    if (ax > ay) ax = ay;
+                    else ay = ax;
+
+                    pointsgroup[0].X = ox - ax;
+                    pointsgroup[0].Y = oy - ay;
+
+                    pointsgroup[1].X = ox + ax;
+                    pointsgroup[1].Y = oy - ay;
+
+                    pointsgroup[2].X = ox + ax;
+                    pointsgroup[2].Y = oy + ay;
+
+                    pointsgroup[3].X = ox - ax;
+                    pointsgroup[3].Y = oy + ay;
+
+                    g.DrawImage(bm, new Point(0, 0));
+                    g.DrawPolygon(Pens.Blue, pointsgroup);
+                }
+            }
+            else if ((MenuID == 212) && PressNum > 0)
+            {
+
+                double a;
+                if (e.X == FirstX && e.Y == FirstY)//两点重合，不旋转
+                    return;
+                if (e.X == FirstX && e.Y > FirstY)//分母为零
+                    a = Pi / 2.0;
+                else if (e.X == FirstX && e.Y < FirstY)
+                {
+                    a = Pi / 2.0 * 3.0;
+                }
+                else
+                    a = Math.Atan((double)(e.Y - FirstY) / (double)(e.X - FirstX));
+                a = a / Pi * 180.0;//转化为角度
+                int x0 = (pointsgroup[0].X + pointsgroup[1].X) / 2, y0 = (pointsgroup[0].Y + pointsgroup[2].Y) / 2;
+                Matrix DrawMatrix = new Matrix();//利用矩阵计算
+                DrawMatrix.Translate(-x0, -y0);
+                DrawMatrix.Rotate((float)a, MatrixOrder.Append);
+                DrawMatrix.Translate(x0, y0, MatrixOrder.Append);
+                matrix = DrawMatrix;
+                Graphics tmp = CreateGraphics();
+                g.DrawImage(bm, new Point(0, 0));
+                tmp.Transform = DrawMatrix;
+
+                tmp.DrawPolygon(Pens.Blue, pointsgroup);
+
             }
             else if(((MenuID == 107)||(MenuID == 108)) && (PressNum > 0))
             {
-                if(!((group[SaveNumber].X==e.X)&&(group[SaveNumber].Y == e.Y)))
+                g.DrawImage(bm, new Point(0, 0));
+                if (!((group[SaveNumber].X==e.X)&&(group[SaveNumber].Y == e.Y)))
                 {
                     g.DrawLine(BackgroundPen, group[SaveNumber].X - 5, group[SaveNumber].Y, group[SaveNumber].X + 5, group[SaveNumber].Y);
                     g.DrawLine(BackgroundPen, group[SaveNumber].X, group[SaveNumber].Y - 5, group[SaveNumber].X, group[SaveNumber].Y + 5);
+                    
                     if (MenuID == 107)
-                        Bezier1(0);//擦除十字标志和旧线
+                        Bezier1(g,0);//擦除十字标志和旧线
                     else
-                        BSample1(0);
+                        BSample1(g,0);
+                    
                     g.DrawLine(DrawPen, e.X - 5, e.Y, e.X + 5, e.Y);
                     g.DrawLine(DrawPen, e.X, e.Y - 5, e.X, e.Y + 5);
                     group[SaveNumber].X = e.X;
                     group[SaveNumber].Y = e.Y;
                     if (MenuID == 107)
-                        Bezier1(1);
+                        Bezier1(g,1);
                     else
-                        BSample1(1);
+                        BSample1(g,1);
 
                
+                }
+                for (int i = 0; i < PointNum; i++)
+                {
+                    g.DrawLine(Pens.Black, group[i].X - 5, group[i].Y, group[i].X + 5, group[i].Y);
+                    g.DrawLine(Pens.Black, group[i].X, group[i].Y - 5, group[i].X, group[i].Y + 5);
+                }
+            }
+            else if((MenuID == 231) && (PressNum > 0)){
+                if (!((group[SaveNumber].X == e.X) && (group[SaveNumber].Y == e.Y)))
+                {
+                    g.DrawImage(bm, new Point(0, 0));
+                    group[SaveNumber].X = e.X;
+                    group[SaveNumber].Y = e.Y;
+                    for (int i = 0; i < PointNum - 1; i++)
+                    {
+                        g.DrawLine(Pens.Red, group[i], group[i + 1]);
+                    }
+                    g.DrawLine(Pens.Red, group[0], group[PointNum - 1]);
+                    ScanLineFill1(g);
+                }
+            }
+            else if ((MenuID == 299) && (PressNum > 0))
+            {
+                if (!((group[SaveNumber].X == e.X) && (group[SaveNumber].Y == e.Y)))
+                {
+                    g.DrawImage(bm, new Point(0, 0));
+                    group[SaveNumber].X = e.X;
+                    group[SaveNumber].Y = e.Y;
+                    for (int i = 0; i < PointNum - 1; i++)
+                    {
+                        g.DrawLine(Pens.Red, group[i], group[i + 1]);
+                    }
+                    g.DrawLine(Pens.Red, group[0], group[PointNum - 1]);
+                }
+            }
+            else if (((MenuID == 201) || (MenuID == 202)) && (PressNum > 0))
+            {
+                if (!((lineGroup[SaveNumber].X == e.X) && (lineGroup[SaveNumber].Y == e.Y)))
+                {
+                    g.DrawImage(bm, new Point(0, 0));
+                    lineGroup[SaveNumber].X = e.X;
+                    lineGroup[SaveNumber].Y = e.Y;
+                    g.DrawLine(DrawPen, lineGroup[0].X, lineGroup[0].Y, lineGroup[1].X, lineGroup[1].Y);
                 }
             }
             
@@ -1015,8 +1353,8 @@ namespace CG
             //MenuID = 2;
             //PressNum = 0;//初始化
             
-            Graphics g = CreateGraphics();
-            g.Clear(BackColor1);
+            //Graphics g = CreateGraphics();
+            //g.Clear(BackColor1);
         }
 
         private void MidCut_Click(object sender, EventArgs e)
@@ -1330,29 +1668,17 @@ namespace CG
         private void PingMove_Click(object sender, EventArgs e)
         {
             initializeLine(11);
-            Graphics g = CreateGraphics();
-            pointsgroup[0] = new Point(100, 100);
-            pointsgroup[1] = new Point(200, 100);
-            pointsgroup[2] = new Point(200, 200);
-            pointsgroup[3] = new Point(100, 200);
-            g.DrawPolygon(Pens.Red, pointsgroup);
         }
 
         private void 图形旋转ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             initializeLine(12);
-            Graphics g = CreateGraphics();
-            pointsgroup[0] = new Point(100, 100);
-            pointsgroup[1] = new Point(200, 100);
-            pointsgroup[2] = new Point(200, 200);
-            pointsgroup[3] = new Point(100, 200);
-            g.DrawPolygon(Pens.Red, pointsgroup);
         }
 
-        private void Bezier_4(int mode, Point p1,Point p2,Point p3,Point p4)
+        private void Bezier_4(Graphics gp, int mode, Point p1,Point p2,Point p3,Point p4)
         {
             int i, n;
-            Graphics g = Graphics.FromImage(bm);
+            Graphics g = gp;// Graphics.FromImage(bm);
             Point p = new Point();
             Point oldp = new Point();
             double t1, t2, t3, t4,dt;
@@ -1383,8 +1709,8 @@ namespace CG
                 g.DrawLine(DrawPen, oldp, p);
                 oldp = p;
             }
-            Graphics G = CreateGraphics();//创建画布
-            G.DrawImage(bm, new Point(0, 0));
+            //Graphics G = CreateGraphics();//创建画布
+            //G.DrawImage(bm, new Point(0, 0));
         }
         private void Bezier_41(int mode, Point p1, Point p2, Point p3,Point p4)
         {
@@ -1430,7 +1756,7 @@ namespace CG
             }
 
         }
-        private void Bezier1(int mode)
+        private void Bezier1(Graphics gp, int mode)
         {
             Point[] p = new Point[300];//储存完整的Bezier曲线控制点
             int i = 0, j = 0;
@@ -1455,7 +1781,7 @@ namespace CG
             };
             for(j = 0; j < i - 3; j += 3)
             {
-                Bezier_4(mode, p[j], p[j + 1], p[j + 2], p[j + 3]);
+                Bezier_4(gp, mode, p[j], p[j + 1], p[j + 2], p[j + 3]);
             }
         }
         private void BezierCurve_Click(object sender, EventArgs e)
@@ -1464,40 +1790,90 @@ namespace CG
             MenuID = 7;
             PointNum = 0;
             PressNum = 0;
-            Graphics g = CreateGraphics();
-            g.Clear(BackColor1);
+
         }
 
         private void Form1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            Graphics g = CreateGraphics();
+            Graphics g = Graphics.FromImage(bm);
+            //Graphics g = CreateGraphics();
             Pen DrawPen = new Pen(Color.White, 1);
             if (MenuID == 107 || MenuID == 108)
             {
-                for (int i = 0; i < PointNum; i++)
-                {
-                    g.DrawLine(DrawPen, group[i].X - 5, group[i].Y, group[i].X + 5, group[i].Y);
-                    g.DrawLine(DrawPen, group[i].X, group[i].Y - 5, group[i].X, group[i].Y + 5);
-                }
                 if (MenuID == 107)
                 {
-                    Bezier1(2);//绘制Bezier曲线
+                    Bezier1(g,2);//绘制Bezier曲线
                     //initializeLine(7);//将操作改回Bezier
                     MenuID = 7;
                 }
                 else
                 {
-                    BSample1(2);
+                    BSample1(g,2);
                     MenuID = 8;
                 }
                 PressNum = 0;
                 PointNum = 0;
             }
+            else if (MenuID == 211)
+            {
+                g.DrawPolygon(Pens.Red, pointsgroup);
+                MenuID = 11;
+                PressNum = 0;
+                PointNum = 0;
+            }
+            else if (MenuID == 277)
+            {
+                g.DrawPolygon(Pens.Red, pointsgroup);
+                MenuID = 77;
+                PressNum = 0;
+                PointNum = 0;
+            }
+            else if (MenuID == 212)
+            {
+                g.Transform = matrix;
+                g.DrawPolygon(Pens.Red, pointsgroup);
+                MenuID = 12;
+                PressNum = 0;
+                PointNum = 0;
+            }
+            else if (MenuID == 231)
+            {
+                ScanLineFill1(g);
+                MenuID = 31;
+                PressNum = 0;
+                PointNum = 0;
+            }
+            else if (MenuID == 299)
+            {
+                for(int i = 0; i < PointNum-1;i++)
+                    DDALine1(g,group[i].X,group[i].Y,group[i+1].X,group[i+1].Y);
+                DDALine1(g, group[PointNum-1].X, group[PointNum-1].Y, group[0].X, group[0].Y);
+                MenuID = 99;
+                PressNum = 0;
+                PointNum = 0;
+            }
+            else if(MenuID ==201||MenuID == 202)
+            {
+                if (MenuID == 201)
+                {
+                    DDALine1(g, lineGroup[0].X, lineGroup[0].Y, lineGroup[1].X, lineGroup[1].Y);
+                    MenuID = 1;
+                }
+                if (MenuID == 202)
+                {
+                    MidLine1(g, lineGroup[0].X, lineGroup[0].Y, lineGroup[1].X, lineGroup[1].Y);
+                    MenuID = 2;
+                }
+                PressNum = 0;
+                PointNum = 0;
+            }
+            Graphics G = CreateGraphics();
+            G.DrawImage(bm, new Point(0, 0));
         }
 
-        private void BSample_4(int mode, Point p0, Point p1,Point p2,Point p3)
+        private void BSample_4(Graphics gp, int mode, Point p0, Point p1,Point p2,Point p3)
         {
-            Graphics g = Graphics.FromImage(bm);
+            Graphics g = gp;// Graphics.FromImage(bm);
 
             Point p = new Point();
             Point oldp = new Point();
@@ -1530,22 +1906,22 @@ namespace CG
                     g.DrawLine(DrawPen, oldp, p);
                 oldp = p;
             }
-            Graphics G = CreateGraphics();//创建画布
-            G.DrawImage(bm, new Point(0, 0));
+            //Graphics G = CreateGraphics();//创建画布
+            //G.DrawImage(bm, new Point(0, 0));
         }
-        private void BSample1(int mode)
+        private void BSample1(Graphics gp, int mode)
         {
             for(int i = 0; i < PointNum - 3; i++)
             {
-                BSample_4(mode, group[i], group[i + 1], group[i + 2], group[i + 3]);
+                BSample_4(gp, mode, group[i], group[i + 1], group[i + 2], group[i + 3]);
             }
         }
         
         private void BSampleCurve_Click(object sender, EventArgs e)
         {
             initializeLine(8);
-            Graphics g = CreateGraphics();
-            g.Clear(BackColor1);
+            //Graphics g = CreateGraphics();
+            //g.Clear(BackColor1);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -1556,12 +1932,12 @@ namespace CG
         private void 保存ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-            saveFileDialog1.InitialDirectory = "d:\\";
-            saveFileDialog1.Filter = "Jpg 图片|*.jpg|Bmp 图片|*.bmp|Gif 图片|*.gif|Png 图片|*.png|Wmf  图片|*.wmf";
-            saveFileDialog1.FilterIndex = 2;
+            saveFileDialog1.InitialDirectory = "c:\\";
+            saveFileDialog1.Filter = "Bmp 图片|*.bmp";
+            //saveFileDialog1.FilterIndex = 2;
             saveFileDialog1.RestoreDirectory = true;
             DialogResult dr = saveFileDialog1.ShowDialog();
-            saveFileDialog1.FileName = System.DateTime.Now.ToString("yyyyMMddHHmmss") + "-";
+            //saveFileDialog1.FileName = System.DateTime.Now.ToString("yyyyMMddHHmmss") + "-";
             if (dr == DialogResult.OK && saveFileDialog1.FileName.Length > 0)
             {
                 bm.Save(saveFileDialog1.FileName);
@@ -1570,18 +1946,37 @@ namespace CG
         }
         private void 新建ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            bm = new Bitmap(900, 600);
+            Graphics g = Graphics.FromImage(bm);
+            g.Clear(BackColor1);
             Graphics G = CreateGraphics();
             G.Clear(BackColor1);
             G.DrawImage(bm, new Point(0, 0));
+            PointNum = 0;
+            PressNum = 0;
+        }
+
+        private void 多多边形绘制见图形填充功能ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MenuID = 99;
+            initializeLine(99);
+        }
+
+        private void 二维图形裁剪ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void 图形缩放ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            initializeLine(77);
         }
 
         private void BresenhamCircle_Click(object sender, EventArgs e)
         {
             initializeLine(5);//圆与直线初始化通用
             
-            Graphics g = CreateGraphics();//生成画布
-            g.Clear(BackColor1);//画布上色
+            //Graphics g = CreateGraphics();//生成画布
+            //g.Clear(BackColor1);//画布上色
         }
 
         private void ScanLineFill_Click(object sender, EventArgs e)
@@ -1589,8 +1984,8 @@ namespace CG
             MenuID = 31;//扫描线填充算法
             initializeLine(31);
             
-            Graphics g = CreateGraphics();//创建画布
-            g.Clear(BackColor1);//背景填充
+            //Graphics g = CreateGraphics();//创建画布
+            //g.Clear(BackColor1);//背景填充
         }
 
         private void CohenCut_Click(object sender, EventArgs e)

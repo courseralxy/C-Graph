@@ -34,24 +34,24 @@ namespace CG
             this.文件ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.新建ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.保存ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.编辑ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.基本图形生成ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.DDALine = new System.Windows.Forms.ToolStripMenuItem();
             this.MidLine = new System.Windows.Forms.ToolStripMenuItem();
             this.BresenhamCircle = new System.Windows.Forms.ToolStripMenuItem();
             this.BezierCurve = new System.Windows.Forms.ToolStripMenuItem();
             this.BSampleCurve = new System.Windows.Forms.ToolStripMenuItem();
+            this.多多边形绘制见图形填充功能ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.二维图形变换ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.PingMove = new System.Windows.Forms.ToolStripMenuItem();
             this.图形旋转ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.二维图形裁剪ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.CohenCut = new System.Windows.Forms.ToolStripMenuItem();
             this.MidCut = new System.Windows.Forms.ToolStripMenuItem();
             this.LiangCut = new System.Windows.Forms.ToolStripMenuItem();
             this.WindowCut = new System.Windows.Forms.ToolStripMenuItem();
             this.图形填充ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ScanLineFill = new System.Windows.Forms.ToolStripMenuItem();
             this.退出ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.图形缩放ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -60,7 +60,6 @@ namespace CG
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.文件ToolStripMenuItem,
-            this.编辑ToolStripMenuItem,
             this.基本图形生成ToolStripMenuItem,
             this.二维图形变换ToolStripMenuItem,
             this.二维图形裁剪ToolStripMenuItem,
@@ -95,12 +94,6 @@ namespace CG
             this.保存ToolStripMenuItem.Text = "保存";
             this.保存ToolStripMenuItem.Click += new System.EventHandler(this.保存ToolStripMenuItem_Click);
             // 
-            // 编辑ToolStripMenuItem
-            // 
-            this.编辑ToolStripMenuItem.Name = "编辑ToolStripMenuItem";
-            this.编辑ToolStripMenuItem.Size = new System.Drawing.Size(51, 24);
-            this.编辑ToolStripMenuItem.Text = "编辑";
-            // 
             // 基本图形生成ToolStripMenuItem
             // 
             this.基本图形生成ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -108,7 +101,8 @@ namespace CG
             this.MidLine,
             this.BresenhamCircle,
             this.BezierCurve,
-            this.BSampleCurve});
+            this.BSampleCurve,
+            this.多多边形绘制见图形填充功能ToolStripMenuItem});
             this.基本图形生成ToolStripMenuItem.Name = "基本图形生成ToolStripMenuItem";
             this.基本图形生成ToolStripMenuItem.Size = new System.Drawing.Size(111, 24);
             this.基本图形生成ToolStripMenuItem.Text = "基本图形生成";
@@ -148,11 +142,19 @@ namespace CG
             this.BSampleCurve.Text = "B样条曲线";
             this.BSampleCurve.Click += new System.EventHandler(this.BSampleCurve_Click);
             // 
+            // 多多边形绘制见图形填充功能ToolStripMenuItem
+            // 
+            this.多多边形绘制见图形填充功能ToolStripMenuItem.Name = "多多边形绘制见图形填充功能ToolStripMenuItem";
+            this.多多边形绘制见图形填充功能ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.多多边形绘制见图形填充功能ToolStripMenuItem.Text = "多边形";
+            this.多多边形绘制见图形填充功能ToolStripMenuItem.Click += new System.EventHandler(this.多多边形绘制见图形填充功能ToolStripMenuItem_Click);
+            // 
             // 二维图形变换ToolStripMenuItem
             // 
             this.二维图形变换ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.PingMove,
-            this.图形旋转ToolStripMenuItem});
+            this.图形旋转ToolStripMenuItem,
+            this.图形缩放ToolStripMenuItem});
             this.二维图形变换ToolStripMenuItem.Name = "二维图形变换ToolStripMenuItem";
             this.二维图形变换ToolStripMenuItem.Size = new System.Drawing.Size(111, 24);
             this.二维图形变换ToolStripMenuItem.Text = "二维图形变换";
@@ -174,20 +176,13 @@ namespace CG
             // 二维图形裁剪ToolStripMenuItem
             // 
             this.二维图形裁剪ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.CohenCut,
             this.MidCut,
             this.LiangCut,
             this.WindowCut});
             this.二维图形裁剪ToolStripMenuItem.Name = "二维图形裁剪ToolStripMenuItem";
             this.二维图形裁剪ToolStripMenuItem.Size = new System.Drawing.Size(111, 24);
             this.二维图形裁剪ToolStripMenuItem.Text = "二维图形裁剪";
-            // 
-            // CohenCut
-            // 
-            this.CohenCut.Name = "CohenCut";
-            this.CohenCut.Size = new System.Drawing.Size(204, 26);
-            this.CohenCut.Text = "Cohen算法";
-            this.CohenCut.Click += new System.EventHandler(this.CohenCut_Click);
+            this.二维图形裁剪ToolStripMenuItem.Click += new System.EventHandler(this.二维图形裁剪ToolStripMenuItem_Click);
             // 
             // MidCut
             // 
@@ -232,6 +227,13 @@ namespace CG
             this.退出ToolStripMenuItem.Text = "退出";
             this.退出ToolStripMenuItem.Click += new System.EventHandler(this.退出ToolStripMenuItem_Click);
             // 
+            // 图形缩放ToolStripMenuItem
+            // 
+            this.图形缩放ToolStripMenuItem.Name = "图形缩放ToolStripMenuItem";
+            this.图形缩放ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.图形缩放ToolStripMenuItem.Text = "图形缩放";
+            this.图形缩放ToolStripMenuItem.Click += new System.EventHandler(this.图形缩放ToolStripMenuItem_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -266,7 +268,6 @@ namespace CG
         private System.Windows.Forms.ToolStripMenuItem 图形填充ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 退出ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ScanLineFill;
-        private System.Windows.Forms.ToolStripMenuItem CohenCut;
         private System.Windows.Forms.ToolStripMenuItem MidCut;
         private System.Windows.Forms.ToolStripMenuItem LiangCut;
         private System.Windows.Forms.ToolStripMenuItem WindowCut;
@@ -274,8 +275,9 @@ namespace CG
         private System.Windows.Forms.ToolStripMenuItem 图形旋转ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 文件ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 保存ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 编辑ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 新建ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 多多边形绘制见图形填充功能ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 图形缩放ToolStripMenuItem;
     }
 }
 
